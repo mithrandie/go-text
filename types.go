@@ -34,3 +34,12 @@ func (lb LineBreak) Value() string {
 func (lb LineBreak) String() string {
 	return lineBreakLiterals[lb]
 }
+
+type FieldAlignment int
+
+const (
+	NotAligned FieldAlignment = iota
+	Centering
+	RightAligned
+	LeftAligned
+)
