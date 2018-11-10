@@ -244,7 +244,7 @@ func TestEncoder_Encode(t *testing.T) {
 			e.SetFieldAlignments(v.Alignments)
 		}
 
-		result := e.Encode()
+		result, _ := e.Encode()
 
 		if result != v.Expect {
 			t.Errorf("%s: result = %q, want %q", v.Name, result, v.Expect)

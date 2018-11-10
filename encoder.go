@@ -3,7 +3,7 @@ package text
 type Encoder interface {
 	SetHeader([]*Field)
 	AppendRecord([]*Field)
-	Encode()
+	Encode() (string, error)
 }
 
 type Field struct {

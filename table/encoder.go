@@ -22,6 +22,7 @@ type Encoder struct {
 	LineBreak            string
 	EastAsianEncoding    bool
 	CountDiacriticalSign bool
+	Encoding             text.Encoding
 
 	// GFM or Org Table
 	WithoutHeader bool
@@ -41,6 +42,7 @@ func NewEncoder(format TableFormat, recordCounts int) *Encoder {
 		LineBreak:            text.LF.Value(),
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
+		Encoding:             text.UTF8,
 		WithoutHeader:        false,
 		fieldLen:             0,
 		records:              make([][]*text.Field, 0, recordCounts),
@@ -88,9 +90,9 @@ func (e *Encoder) prepareField(field *text.Field) *text.Field {
 	return field
 }
 
-func (e *Encoder) Encode() string {
+func (e *Encoder) Encode() (string, error) {
 	if e.fieldLen < 1 {
-		return ""
+		return "", nil
 	}
 
 	lines := make([]string, 0, len(e.records)+4)
@@ -147,7 +149,11 @@ func (e *Encoder) Encode() string {
 		}
 	}
 
-	return strings.Join(lines, e.LineBreak)
+	s := strings.Join(lines, e.LineBreak)
+	if e.Encoding != text.UTF8 {
+		return text.EncodeCharacterCode(s, e.Encoding)
+	}
+	return s, nil
 }
 
 func (e *Encoder) formatRecord(record []*text.Field, widths []int) string {
