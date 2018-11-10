@@ -92,6 +92,7 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
+	//TODO Encode
 	return e.buf.String(), nil
 }
 
