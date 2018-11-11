@@ -12,8 +12,8 @@ import (
 
 type Reader struct {
 	DelimiterPositions DelimiterPositions
-	Encoding           text.Encoding
 	WithoutNull        bool
+	Encoding           text.Encoding
 
 	reader *bufio.Reader
 	buf    bytes.Buffer
@@ -21,12 +21,12 @@ type Reader struct {
 	DetectedLineBreak text.LineBreak
 }
 
-func NewReader(r io.Reader, positions []int) *Reader {
+func NewReader(r io.Reader, positions []int, enc text.Encoding) *Reader {
 	return &Reader{
 		DelimiterPositions: positions,
-		Encoding:           text.UTF8,
 		WithoutNull:        false,
-		reader:             bufio.NewReader(r),
+		Encoding:           enc,
+		reader:             bufio.NewReader(text.GetTransformDecoder(r, enc)),
 	}
 }
 

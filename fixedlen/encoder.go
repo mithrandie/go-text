@@ -16,32 +16,32 @@ type Encoder struct {
 	WithoutHeader      bool
 	Encoding           text.Encoding
 
-	header   []*text.Field
-	records  [][]*text.Field
-	fieldLen int
-	buf      bytes.Buffer
+	header    []*Field
+	recordSet [][]*Field
+	fieldLen  int
+	buf       bytes.Buffer
 }
 
 func NewEncoder(recordCounts int) *Encoder {
 	return &Encoder{
 		DelimiterPositions: nil,
 		LineBreak:          text.LF.Value(),
-		Encoding:           text.UTF8,
 		WithoutHeader:      false,
+		Encoding:           text.UTF8,
 		fieldLen:           0,
-		records:            make([][]*text.Field, 0, recordCounts),
+		recordSet:          make([][]*Field, 0, recordCounts),
 	}
 }
 
-func (e *Encoder) SetHeader(header []*text.Field) {
+func (e *Encoder) SetHeader(header []*Field) {
 	e.header = header
 	if e.fieldLen < len(header) {
 		e.fieldLen = len(header)
 	}
 }
 
-func (e *Encoder) AppendRecord(record []*text.Field) {
-	e.records = append(e.records, record)
+func (e *Encoder) AppendRecord(record []*Field) {
+	e.recordSet = append(e.recordSet, record)
 	if e.fieldLen < len(record) {
 		e.fieldLen = len(record)
 	}
@@ -82,7 +82,7 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	for _, record := range e.records {
+	for _, record := range e.recordSet {
 		if 0 < e.buf.Len() {
 			e.buf.WriteString(e.LineBreak)
 		}
@@ -92,11 +92,10 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	//TODO Encode
-	return e.buf.String(), nil
+	return text.Encode(e.buf.String(), e.Encoding)
 }
 
-func (e *Encoder) formatRecord(record []*text.Field, insertSpace bool) error {
+func (e *Encoder) formatRecord(record []*Field, insertSpace bool) error {
 	start := 0
 	for i, end := range e.DelimiterPositions {
 		if insertSpace && 0 < i {
@@ -116,7 +115,7 @@ func (e *Encoder) formatRecord(record []*text.Field, insertSpace bool) error {
 	return nil
 }
 
-func (e *Encoder) addField(field *text.Field, fieldSize int) error {
+func (e *Encoder) addField(field *Field, fieldSize int) error {
 	size := text.ByteSize(field.Contents, e.Encoding)
 	if fieldSize < size {
 		return errors.New(fmt.Sprintf("value is too long: %q for %d byte(s) length field", field.Contents, fieldSize))
@@ -150,7 +149,7 @@ func (e *Encoder) measureLengthPerField() []int {
 		}
 	}
 
-	for _, record := range e.records {
+	for _, record := range e.recordSet {
 		for i, v := range record {
 			l := text.ByteSize(v.Contents, e.Encoding)
 			if length[i] < l {

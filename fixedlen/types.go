@@ -3,6 +3,8 @@ package fixedlen
 import (
 	"strconv"
 	"strings"
+
+	"github.com/mithrandie/go-text"
 )
 
 type DelimiterPositions []int
@@ -39,4 +41,16 @@ func (p DelimiterPositions) String() string {
 		slist = append(slist, strconv.Itoa(v))
 	}
 	return "[" + strings.Join(slist, ", ") + "]"
+}
+
+type Field struct {
+	Contents  string
+	Alignment text.FieldAlignment
+}
+
+func NewField(contents string, alignment text.FieldAlignment) *Field {
+	return &Field{
+		Contents:  contents,
+		Alignment: alignment,
+	}
 }

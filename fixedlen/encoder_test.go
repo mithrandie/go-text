@@ -8,8 +8,8 @@ import (
 
 var fixedLengthEncoderEncodeTests = []struct {
 	Name               string
-	Header             []*text.Field
-	Records            [][]*text.Field
+	Header             []*Field
+	Records            [][]*Field
 	DelimiterPositions []int
 	LineBreak          text.LineBreak
 	WithoutHeader      bool
@@ -19,8 +19,8 @@ var fixedLengthEncoderEncodeTests = []struct {
 }{
 	{
 		Name:               "Empty Positions",
-		Header:             []*text.Field{},
-		Records:            [][]*text.Field{},
+		Header:             []*Field{},
+		Records:            [][]*Field{},
 		DelimiterPositions: []int{},
 		LineBreak:          text.LF,
 		WithoutHeader:      false,
@@ -29,11 +29,11 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Empty RecordSet",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 		},
-		Records:            [][]*text.Field{},
+		Records:            [][]*Field{},
 		DelimiterPositions: []int{10, 42},
 		LineBreak:          text.LF,
 		WithoutHeader:      false,
@@ -43,12 +43,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -75,13 +75,13 @@ var fixedLengthEncoderEncodeTests = []struct {
 			"true       abc                                    ",
 	},
 	{
-		Name: "Fixed-Length Encode SJIS Format",
-		Header: []*text.Field{
+		Name: "Fixed-Length Encode to SJIS",
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "日本語", Alignment: text.LeftAligned},
@@ -99,17 +99,17 @@ var fixedLengthEncoderEncodeTests = []struct {
 		Encoding:           text.SJIS,
 		Expect: "" +
 			"c1   c2        c3   \n" +
-			"abc  日本語    def  \n" +
+			"abc  " + string([]byte{0x93, 0xfa, 0x96, 0x7b, 0x8c, 0xea}) + "    def  \n" +
 			"ghi  jkl       mno  ",
 	},
 	{
 		Name: "Fixed-Length Encode Without Header",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -131,12 +131,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode with Empty Field",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -159,12 +159,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Invalid Positions",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -184,12 +184,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Field Length too long in Header",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "cccccc1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -209,12 +209,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Field Length too long in Record",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -234,12 +234,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Concatnate Automatically",
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -263,7 +263,7 @@ var fixedLengthEncoderEncodeTests = []struct {
 	{
 		Name:   "Fixed-Length Encode Concatnate Automatically Without Header",
 		Header: nil,
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},

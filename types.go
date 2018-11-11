@@ -45,7 +45,3 @@ const (
 )
 
 type RawText []byte
-
-func NewRawText(s string) RawText {
-	return []byte(s)
-}

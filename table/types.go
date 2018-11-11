@@ -1,9 +1,26 @@
 package table
 
-type TableFormat int
+import "github.com/mithrandie/go-text"
+
+type Format int
 
 const (
-	PlainTable TableFormat = iota
+	PlainTable Format = iota
 	GFMTable
 	OrgTable
 )
+
+type Field struct {
+	Contents  string
+	Alignment text.FieldAlignment
+
+	Lines []string
+	Width int
+}
+
+func NewField(contents string, alignment text.FieldAlignment) *Field {
+	return &Field{
+		Contents:  contents,
+		Alignment: alignment,
+	}
+}

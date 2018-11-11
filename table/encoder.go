@@ -18,7 +18,7 @@ const (
 )
 
 type Encoder struct {
-	Format               TableFormat
+	Format               Format
 	LineBreak            string
 	EastAsianEncoding    bool
 	CountDiacriticalSign bool
@@ -30,13 +30,13 @@ type Encoder struct {
 	// GFM Table only
 	alignments []text.FieldAlignment
 
-	header   []*text.Field
-	records  [][]*text.Field
-	fieldLen int
-	buf      bytes.Buffer
+	header    []*Field
+	recordSet [][]*Field
+	fieldLen  int
+	buf       bytes.Buffer
 }
 
-func NewEncoder(format TableFormat, recordCounts int) *Encoder {
+func NewEncoder(format Format, recordCounts int) *Encoder {
 	return &Encoder{
 		Format:               format,
 		LineBreak:            text.LF.Value(),
@@ -45,11 +45,11 @@ func NewEncoder(format TableFormat, recordCounts int) *Encoder {
 		Encoding:             text.UTF8,
 		WithoutHeader:        false,
 		fieldLen:             0,
-		records:              make([][]*text.Field, 0, recordCounts),
+		recordSet:            make([][]*Field, 0, recordCounts),
 	}
 }
 
-func (e *Encoder) SetHeader(header []*text.Field) {
+func (e *Encoder) SetHeader(header []*Field) {
 	e.header = e.prepareRecord(header)
 	if e.fieldLen < len(header) {
 		e.fieldLen = len(header)
@@ -60,21 +60,21 @@ func (e *Encoder) SetFieldAlignments(alignments []text.FieldAlignment) {
 	e.alignments = alignments
 }
 
-func (e *Encoder) AppendRecord(record []*text.Field) {
-	e.records = append(e.records, e.prepareRecord(record))
+func (e *Encoder) AppendRecord(record []*Field) {
+	e.recordSet = append(e.recordSet, e.prepareRecord(record))
 	if e.fieldLen < len(record) {
 		e.fieldLen = len(record)
 	}
 }
 
-func (e *Encoder) prepareRecord(record []*text.Field) []*text.Field {
+func (e *Encoder) prepareRecord(record []*Field) []*Field {
 	for _, f := range record {
 		e.prepareField(f)
 	}
 	return record
 }
 
-func (e *Encoder) prepareField(field *text.Field) *text.Field {
+func (e *Encoder) prepareField(field *Field) *Field {
 	lines := strings.Split(e.escape(field.Contents), e.LineBreak)
 
 	width := 0
@@ -95,11 +95,11 @@ func (e *Encoder) Encode() (string, error) {
 		return "", nil
 	}
 
-	lines := make([]string, 0, len(e.records)+4)
+	lines := make([]string, 0, len(e.recordSet)+4)
 
 	fieldWidths := make([]int, e.fieldLen)
 
-	for _, record := range e.records {
+	for _, record := range e.recordSet {
 		for i, f := range record {
 			fw := f.Width
 			if fieldWidths[i] < fw {
@@ -139,8 +139,8 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	if 0 < len(e.records) {
-		for _, record := range e.records {
+	if 0 < len(e.recordSet) {
+		for _, record := range e.recordSet {
 			lines = append(lines, e.formatRecord(record, fieldWidths))
 		}
 
@@ -149,14 +149,10 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	s := strings.Join(lines, e.LineBreak)
-	if e.Encoding != text.UTF8 {
-		return text.EncodeCharacterCode(s, e.Encoding)
-	}
-	return s, nil
+	return text.Encode(strings.Join(lines, e.LineBreak), e.Encoding)
 }
 
-func (e *Encoder) formatRecord(record []*text.Field, widths []int) string {
+func (e *Encoder) formatRecord(record []*Field, widths []int) string {
 	lineLen := 0
 	for _, f := range record {
 		n := len(f.Lines)

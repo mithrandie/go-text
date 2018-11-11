@@ -8,9 +8,9 @@ import (
 
 var encoderEncodeTests = []struct {
 	Name                 string
-	Format               TableFormat
-	Header               []*text.Field
-	Records              [][]*text.Field
+	Format               Format
+	Header               []*Field
+	Records              [][]*Field
 	Alignments           []text.FieldAlignment
 	LineBreak            string
 	EastAsiaEncoding     bool
@@ -21,8 +21,8 @@ var encoderEncodeTests = []struct {
 	{
 		Name:                 "Empty Fields",
 		Format:               PlainTable,
-		Header:               []*text.Field{},
-		Records:              [][]*text.Field{},
+		Header:               []*Field{},
+		Records:              [][]*Field{},
 		LineBreak:            text.LF.Value(),
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
@@ -32,11 +32,11 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Empty RecordSet",
 		Format: PlainTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 		},
-		Records:              [][]*text.Field{},
+		Records:              [][]*Field{},
 		LineBreak:            text.LF.Value(),
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
@@ -49,12 +49,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Text Table",
 		Format: PlainTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},
@@ -90,13 +90,13 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "GFM Table",
 		Format: GFMTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 			{Contents: "c4", Alignment: text.Centering},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -132,12 +132,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Org Table",
 		Format: OrgTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -168,11 +168,11 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Right To Left Letters",
 		Format: PlainTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "العَرَبِيَّة", Alignment: text.LeftAligned},
@@ -197,12 +197,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Defferent Length Records",
 		Format: PlainTable,
-		Header: []*text.Field{
+		Header: []*Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*text.Field{
+		Records: [][]*Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},
@@ -224,6 +224,85 @@ var encoderEncodeTests = []struct {
 			"|     -1 |             UNKNOWN              | false  |\n" +
 			"| 2.0123 | 2016-02-01T16:00:00.123456-07:00 |        |\n" +
 			"+--------+----------------------------------+--------+",
+	},
+	{
+		Name:   "Text Table Convert LineBreak",
+		Format: PlainTable,
+		Header: []*Field{
+			{Contents: "c1", Alignment: text.Centering},
+			{Contents: "c2\nsecond line", Alignment: text.Centering},
+			{Contents: "c3", Alignment: text.Centering},
+		},
+		Records: [][]*Field{
+			{
+				{Contents: "-1", Alignment: text.RightAligned},
+				{Contents: "UNKNOWN", Alignment: text.Centering},
+				{Contents: "false", Alignment: text.Centering},
+			},
+			{
+				{Contents: "2.0123", Alignment: text.RightAligned},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
+				{Contents: "abcdef", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "34567890", Alignment: text.RightAligned},
+				{Contents: " ab|cdefghijklmnopqrstuvwxyzabcdefg\r\nhi\"jk日本語あアｱＡ（\n", Alignment: text.LeftAligned},
+				{Contents: "NULL", Alignment: text.Centering},
+			},
+		},
+		LineBreak:            text.CRLF.Value(),
+		EastAsiaEncoding:     true,
+		CountDiacriticalSign: false,
+		WithoutHeader:        false,
+		Expect: "" +
+			"+----------+-------------------------------------+--------+\r\n" +
+			"|    c1    |                 c2                  |   c3   |\r\n" +
+			"|          |             second line             |        |\r\n" +
+			"+----------+-------------------------------------+--------+\r\n" +
+			"|       -1 |               UNKNOWN               | false  |\r\n" +
+			"|   2.0123 | 2016-02-01T16:00:00.123456-07:00    | abcdef |\r\n" +
+			"| 34567890 |  ab|cdefghijklmnopqrstuvwxyzabcdefg |  NULL  |\r\n" +
+			"|          | hi\"jk日本語あアｱＡ（                |        |\r\n" +
+			"|          |                                     |        |\r\n" +
+			"+----------+-------------------------------------+--------+",
+	},
+	{
+		Name:   "Text Table Uneven Fields",
+		Format: PlainTable,
+		Header: []*Field{
+			{Contents: "c1", Alignment: text.Centering},
+			{Contents: "c2\nsecond line", Alignment: text.Centering},
+		},
+		Records: [][]*Field{
+			{
+				{Contents: "-1", Alignment: text.RightAligned},
+				{Contents: "UNKNOWN", Alignment: text.Centering},
+			},
+			{
+				{Contents: "2.0123", Alignment: text.RightAligned},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
+				{Contents: "abcdef", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "34567890", Alignment: text.RightAligned},
+				{Contents: " ab|cdefghijklmnopqrstuvwxyzabcdefg\nhi\"jk日本語あアｱＡ（\n", Alignment: text.LeftAligned},
+			},
+		},
+		LineBreak:            text.LF.Value(),
+		EastAsiaEncoding:     true,
+		CountDiacriticalSign: false,
+		WithoutHeader:        false,
+		Expect: "" +
+			"+----------+-------------------------------------+--------+\n" +
+			"|    c1    |                 c2                  |        |\n" +
+			"|          |             second line             |        |\n" +
+			"+----------+-------------------------------------+--------+\n" +
+			"|       -1 |               UNKNOWN               |        |\n" +
+			"|   2.0123 | 2016-02-01T16:00:00.123456-07:00    | abcdef |\n" +
+			"| 34567890 |  ab|cdefghijklmnopqrstuvwxyzabcdefg |        |\n" +
+			"|          | hi\"jk日本語あアｱＡ（                |        |\n" +
+			"|          |                                     |        |\n" +
+			"+----------+-------------------------------------+--------+",
 	},
 }
 
