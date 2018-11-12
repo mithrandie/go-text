@@ -1,6 +1,8 @@
 package color
 
-import "testing"
+import (
+	"testing"
+)
 
 var paletteRenderTests = []struct {
 	Name   string
