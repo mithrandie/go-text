@@ -15,6 +15,7 @@ type Writer struct {
 
 	writer    *bufio.Writer
 	lineBreak string
+	appended  bool
 }
 
 func NewWriter(w io.Writer, lineBreak text.LineBreak, enc text.Encoding) *Writer {
@@ -26,10 +27,12 @@ func NewWriter(w io.Writer, lineBreak text.LineBreak, enc text.Encoding) *Writer
 }
 
 func (e *Writer) Write(record []Field) error {
-	if 0 < e.writer.Buffered() {
+	if e.appended {
 		if _, err := e.writer.WriteString(e.lineBreak); err != nil {
 			return err
 		}
+	} else {
+		e.appended = true
 	}
 
 	for i := 0; i < len(record); i++ {

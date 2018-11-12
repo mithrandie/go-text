@@ -195,7 +195,7 @@ var encoderEncodeTests = []struct {
 			"+--------+----------------------------------+",
 	},
 	{
-		Name:   "Defferent Length Records",
+		Name:   "Defferent size Records",
 		Format: PlainTable,
 		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},

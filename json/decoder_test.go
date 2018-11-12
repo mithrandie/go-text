@@ -1,7 +1,6 @@
 package json
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -185,7 +184,6 @@ func TestDecoder_Decode(t *testing.T) {
 		}
 		if 0 < len(v.Error) {
 			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
-			fmt.Printf("%#v\n", value.(Array)[1].Encode())
 			continue
 		}
 		if !reflect.DeepEqual(value, v.Expect) {
