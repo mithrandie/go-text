@@ -276,7 +276,7 @@ var delimiterDelimitTests = []struct {
 	},
 	{
 		Input: "" +
-			"aaaaaa 日本語ﾆﾎﾝｺﾞ ccccc\n" +
+			"aaaaaa " + string([]byte{0x93, 0xfa, 0x96, 0x7b, 0x8c, 0xea, 0xc6, 0xce, 0xdd, 0xba, 0xde}) + " ccccc\n" +
 			"aaaaaa bbbbbbbbbbb ccccc\n" +
 			"aaaaaa bbbbbbbbbbb ccccc",
 		NoHeader: true,
@@ -297,7 +297,7 @@ var delimiterDelimitTests = []struct {
 
 func TestDelimiter_Delimit(t *testing.T) {
 	for _, v := range delimiterDelimitTests {
-		d := NewDelimiter(strings.NewReader(v.Input))
+		d := NewDelimiter(strings.NewReader(v.Input), v.Encoding)
 		d.NoHeader = v.NoHeader
 		d.Encoding = v.Encoding
 

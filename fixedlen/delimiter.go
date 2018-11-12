@@ -146,9 +146,10 @@ type Delimiter struct {
 	positions   DelimiterPositions
 }
 
-func NewDelimiter(r io.Reader) *Delimiter {
+func NewDelimiter(r io.Reader, enc text.Encoding) *Delimiter {
 	return &Delimiter{
-		reader:          bufio.NewReader(r),
+		Encoding:        enc,
+		reader:          bufio.NewReader(text.GetTransformDecoder(r, enc)),
 		spacesPerRecord: 5,
 	}
 }
