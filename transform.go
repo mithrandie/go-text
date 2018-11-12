@@ -29,6 +29,16 @@ func GetTransformDecoder(r io.Reader, enc Encoding) io.Reader {
 	}
 }
 
+// Get a writer to transform character encoding from UTF-8 to another encoding.
+func GetTransformWriter(w io.Writer, enc Encoding) io.Writer {
+	switch enc {
+	case SJIS:
+		return transform.NewWriter(w, japanese.ShiftJIS.NewEncoder())
+	default:
+		return w
+	}
+}
+
 // Encode a string from UTF-8 to another encoding.
 func Encode(str string, enc Encoding) (string, error) {
 	if enc == UTF8 {

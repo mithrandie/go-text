@@ -83,28 +83,23 @@ func main() {
 	
 	lineBreak := r.DetectedLineBreak
 	
-	e := csv.NewEncoder(len(recordSet))
+	wfp, err := os.Create("example_new.csv")
+	if err != nil {
+		panic("file open error")
+	}
+	defer wfp.Close()
+	e := csv.NewWriter(wfp, lineBreak, text.SJIS)
 	e.Delimiter = ','
-	e.LineBreak = lineBreak
-	e.WithoutHeader = true
-	e.Encoding = text.SJIS
 	
 	for _, record := range recordSet {
 		r := make([]csv.Field, 0, len(record))
 		for _, field := range record {
 			r = append(r, csv.NewField(string(field), false))
 		}
-		e.AppendRecord(r)
+		if err := e.Write(r); err != nil {
+			panic("write error")
+		}
 	}
-	encoded, _ := e.Encode()
-	
-	wfp, err := os.Create("example_new.csv")
-	if err != nil {
-		panic("file open error")
-	}
-	defer wfp.Close()
-	
-	wfp.WriteString(encoded)	
 }
 ```
 
