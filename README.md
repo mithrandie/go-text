@@ -88,18 +88,20 @@ func main() {
 		panic("file open error")
 	}
 	defer wfp.Close()
-	e := csv.NewWriter(wfp, lineBreak, text.SJIS)
-	e.Delimiter = ','
+	
+	w := csv.NewWriter(wfp, lineBreak, text.SJIS)
+	w.Delimiter = ','
 	
 	for _, record := range recordSet {
 		r := make([]csv.Field, 0, len(record))
 		for _, field := range record {
 			r = append(r, csv.NewField(string(field), false))
 		}
-		if err := e.Write(r); err != nil {
+		if err := w.Write(r); err != nil {
 			panic("write error")
 		}
 	}
+	w.Flush()
 }
 ```
 
@@ -132,28 +134,22 @@ func main() {
 	
 	lineBreak := r.DetectedLineBreak
 	
-	e := fixedlen.NewEncoder(len(recordSet))
-	e.DelimiterPositions = []int{5, 10, 45, 60}
-	e.LineBreak = lineBreak
-	e.WithoutHeader = true
-	e.Encoding = text.SJIS
+	wfp, err := os.Create("example_new.txt")
+	if err != nil {
+		panic("file open error")
+	}
+	defer wfp.Close()
+
+	w := fixedlen.NewWriter(wfp, []int{5, 10, 45, 60}, lineBreak, text.SJIS)
 	
 	for _, record := range recordSet {
 		r := make([]fixedlen.Field, 0, len(record))
 		for _, field := range record {
 			r = append(r, fixedlen.NewField(string(field), text.NotAligned))
 		}
-		e.AppendRecord(r)
+		w.Write(r)
 	}
-	csv, _ := e.Encode()
-	
-	wfp, err := os.Create("example_new.txt")
-	if err != nil {
-		panic("file open error")
-	}
-	defer wfp.Close()
-	
-	wfp.WriteString(csv)	
+	w.Flush()
 }
 ```
 
