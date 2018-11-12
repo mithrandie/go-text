@@ -18,8 +18,8 @@ type Field struct {
 	Width int
 }
 
-func NewField(contents string, alignment text.FieldAlignment) *Field {
-	return &Field{
+func NewField(contents string, alignment text.FieldAlignment) Field {
+	return Field{
 		Contents:  contents,
 		Alignment: alignment,
 	}

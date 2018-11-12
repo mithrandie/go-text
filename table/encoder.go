@@ -30,8 +30,8 @@ type Encoder struct {
 	// GFM Table only
 	alignments []text.FieldAlignment
 
-	header    []*Field
-	recordSet [][]*Field
+	header    []Field
+	recordSet [][]Field
 	fieldLen  int
 	buf       bytes.Buffer
 }
@@ -45,11 +45,11 @@ func NewEncoder(format Format, recordCounts int) *Encoder {
 		Encoding:             text.UTF8,
 		WithoutHeader:        false,
 		fieldLen:             0,
-		recordSet:            make([][]*Field, 0, recordCounts),
+		recordSet:            make([][]Field, 0, recordCounts),
 	}
 }
 
-func (e *Encoder) SetHeader(header []*Field) {
+func (e *Encoder) SetHeader(header []Field) {
 	e.header = e.prepareRecord(header)
 	if e.fieldLen < len(header) {
 		e.fieldLen = len(header)
@@ -60,21 +60,21 @@ func (e *Encoder) SetFieldAlignments(alignments []text.FieldAlignment) {
 	e.alignments = alignments
 }
 
-func (e *Encoder) AppendRecord(record []*Field) {
+func (e *Encoder) AppendRecord(record []Field) {
 	e.recordSet = append(e.recordSet, e.prepareRecord(record))
 	if e.fieldLen < len(record) {
 		e.fieldLen = len(record)
 	}
 }
 
-func (e *Encoder) prepareRecord(record []*Field) []*Field {
-	for _, f := range record {
-		e.prepareField(f)
+func (e *Encoder) prepareRecord(record []Field) []Field {
+	for i := range record {
+		e.prepareField(&record[i])
 	}
 	return record
 }
 
-func (e *Encoder) prepareField(field *Field) *Field {
+func (e *Encoder) prepareField(field *Field) {
 	lines := strings.Split(e.escape(field.Contents), e.LineBreak)
 
 	width := 0
@@ -87,7 +87,6 @@ func (e *Encoder) prepareField(field *Field) *Field {
 
 	field.Lines = lines
 	field.Width = width
-	return field
 }
 
 func (e *Encoder) Encode() (string, error) {
@@ -152,7 +151,7 @@ func (e *Encoder) Encode() (string, error) {
 	return text.Encode(strings.Join(lines, e.LineBreak), e.Encoding)
 }
 
-func (e *Encoder) formatRecord(record []*Field, widths []int) string {
+func (e *Encoder) formatRecord(record []Field, widths []int) string {
 	lineLen := 0
 	for _, f := range record {
 		n := len(f.Lines)

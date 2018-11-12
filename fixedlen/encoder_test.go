@@ -8,8 +8,8 @@ import (
 
 var fixedLengthEncoderEncodeTests = []struct {
 	Name               string
-	Header             []*Field
-	Records            [][]*Field
+	Header             []Field
+	Records            [][]Field
 	DelimiterPositions []int
 	LineBreak          text.LineBreak
 	WithoutHeader      bool
@@ -19,8 +19,8 @@ var fixedLengthEncoderEncodeTests = []struct {
 }{
 	{
 		Name:               "Empty Positions",
-		Header:             []*Field{},
-		Records:            [][]*Field{},
+		Header:             []Field{},
+		Records:            [][]Field{},
 		DelimiterPositions: []int{},
 		LineBreak:          text.LF,
 		WithoutHeader:      false,
@@ -29,11 +29,11 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Empty RecordSet",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 		},
-		Records:            [][]*Field{},
+		Records:            [][]Field{},
 		DelimiterPositions: []int{10, 42},
 		LineBreak:          text.LF,
 		WithoutHeader:      false,
@@ -43,12 +43,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -76,12 +76,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode to SJIS",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "日本語", Alignment: text.LeftAligned},
@@ -104,12 +104,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Without Header",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -131,12 +131,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode with Empty Field",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -159,12 +159,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Invalid Positions",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -184,12 +184,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Field Length too long in Header",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "cccccc1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -209,12 +209,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Field Length too long in Record",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -234,12 +234,12 @@ var fixedLengthEncoderEncodeTests = []struct {
 	},
 	{
 		Name: "Fixed-Length Encode Concatnate Automatically",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 			{Contents: "c3"},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},
@@ -263,7 +263,7 @@ var fixedLengthEncoderEncodeTests = []struct {
 	{
 		Name:   "Fixed-Length Encode Concatnate Automatically Without Header",
 		Header: nil,
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abcabc", Alignment: text.LeftAligned},
 				{Contents: "def", Alignment: text.LeftAligned},

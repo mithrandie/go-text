@@ -13,8 +13,8 @@ type Encoder struct {
 	WithoutHeader bool
 	Encoding      text.Encoding
 
-	header    []*Field
-	recordSet [][]*Field
+	header    []Field
+	recordSet [][]Field
 	fieldLen  int
 	buf       bytes.Buffer
 }
@@ -26,18 +26,18 @@ func NewEncoder(recordCounts int) *Encoder {
 		WithoutHeader: false,
 		Encoding:      text.UTF8,
 		fieldLen:      0,
-		recordSet:     make([][]*Field, 0, recordCounts),
+		recordSet:     make([][]Field, 0, recordCounts),
 	}
 }
 
-func (e *Encoder) SetHeader(header []*Field) {
+func (e *Encoder) SetHeader(header []Field) {
 	e.header = header
 	if e.fieldLen < len(header) {
 		e.fieldLen = len(header)
 	}
 }
 
-func (e *Encoder) AppendRecord(record []*Field) {
+func (e *Encoder) AppendRecord(record []Field) {
 	e.recordSet = append(e.recordSet, record)
 	if e.fieldLen < len(record) {
 		e.fieldLen = len(record)
@@ -62,7 +62,7 @@ func (e *Encoder) Encode() (string, error) {
 	return text.Encode(strings.Join(lines, e.LineBreak), e.Encoding)
 }
 
-func (e *Encoder) formatRecord(record []*Field) string {
+func (e *Encoder) formatRecord(record []Field) string {
 	e.buf.Reset()
 
 	for i := 0; i < e.fieldLen; i++ {

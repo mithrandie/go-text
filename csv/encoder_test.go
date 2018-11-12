@@ -8,8 +8,8 @@ import (
 
 var encoderEncodeTests = []struct {
 	Name          string
-	Header        []*Field
-	Records       [][]*Field
+	Header        []Field
+	Records       [][]Field
 	Delimiter     rune
 	LineBreak     text.LineBreak
 	WithoutHeader bool
@@ -18,8 +18,8 @@ var encoderEncodeTests = []struct {
 }{
 	{
 		Name:          "Empty Positions",
-		Header:        []*Field{},
-		Records:       [][]*Field{},
+		Header:        []Field{},
+		Records:       [][]Field{},
 		Delimiter:     ',',
 		LineBreak:     text.LF,
 		WithoutHeader: false,
@@ -28,11 +28,11 @@ var encoderEncodeTests = []struct {
 	},
 	{
 		Name: "Empty RecordSet",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1"},
 			{Contents: "c2"},
 		},
-		Records:       [][]*Field{},
+		Records:       [][]Field{},
 		Delimiter:     ',',
 		LineBreak:     text.LF,
 		WithoutHeader: false,
@@ -42,12 +42,12 @@ var encoderEncodeTests = []struct {
 	},
 	{
 		Name: "CSV",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Quote: true},
 			{Contents: "c2\nsecond line", Quote: true},
 			{Contents: "c3", Quote: true},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Quote: false},
 				{Contents: "", Quote: false},
@@ -68,12 +68,12 @@ var encoderEncodeTests = []struct {
 	},
 	{
 		Name: "TSV",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Quote: true},
 			{Contents: "c2\nsecond line", Quote: true},
 			{Contents: "c3", Quote: true},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Quote: false},
 				{Contents: "", Quote: false},
@@ -94,11 +94,11 @@ var encoderEncodeTests = []struct {
 	},
 	{
 		Name: "Uneven Fields",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Quote: true},
 			{Contents: "c2\nsecond line", Quote: true},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Quote: false},
 				{Contents: "", Quote: false},
@@ -118,12 +118,12 @@ var encoderEncodeTests = []struct {
 	},
 	{
 		Name: "CSV Encode to SJIS",
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Quote: true},
 			{Contents: "c2\nsecond line", Quote: true},
 			{Contents: "c3", Quote: true},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Quote: false},
 				{Contents: "", Quote: false},

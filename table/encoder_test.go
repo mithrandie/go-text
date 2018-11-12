@@ -9,8 +9,8 @@ import (
 var encoderEncodeTests = []struct {
 	Name                 string
 	Format               Format
-	Header               []*Field
-	Records              [][]*Field
+	Header               []Field
+	Records              [][]Field
 	Alignments           []text.FieldAlignment
 	LineBreak            string
 	EastAsiaEncoding     bool
@@ -21,8 +21,8 @@ var encoderEncodeTests = []struct {
 	{
 		Name:                 "Empty Fields",
 		Format:               PlainTable,
-		Header:               []*Field{},
-		Records:              [][]*Field{},
+		Header:               []Field{},
+		Records:              [][]Field{},
 		LineBreak:            text.LF.Value(),
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
@@ -32,11 +32,11 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Empty RecordSet",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 		},
-		Records:              [][]*Field{},
+		Records:              [][]Field{},
 		LineBreak:            text.LF.Value(),
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
@@ -49,12 +49,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Text Table",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},
@@ -90,13 +90,13 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "GFM Table",
 		Format: GFMTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 			{Contents: "c4", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -132,12 +132,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Org Table",
 		Format: OrgTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "", Alignment: text.Centering},
@@ -168,11 +168,11 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Right To Left Letters",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "abc", Alignment: text.LeftAligned},
 				{Contents: "العَرَبِيَّة", Alignment: text.LeftAligned},
@@ -197,12 +197,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Defferent Length Records",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},
@@ -228,12 +228,12 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Text Table Convert LineBreak",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 			{Contents: "c3", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},
@@ -269,11 +269,11 @@ var encoderEncodeTests = []struct {
 	{
 		Name:   "Text Table Uneven Fields",
 		Format: PlainTable,
-		Header: []*Field{
+		Header: []Field{
 			{Contents: "c1", Alignment: text.Centering},
 			{Contents: "c2\nsecond line", Alignment: text.Centering},
 		},
-		Records: [][]*Field{
+		Records: [][]Field{
 			{
 				{Contents: "-1", Alignment: text.RightAligned},
 				{Contents: "UNKNOWN", Alignment: text.Centering},

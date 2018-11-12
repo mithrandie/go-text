@@ -16,8 +16,8 @@ type Encoder struct {
 	WithoutHeader      bool
 	Encoding           text.Encoding
 
-	header    []*Field
-	recordSet [][]*Field
+	header    []Field
+	recordSet [][]Field
 	fieldLen  int
 	buf       bytes.Buffer
 }
@@ -29,18 +29,18 @@ func NewEncoder(recordCounts int) *Encoder {
 		WithoutHeader:      false,
 		Encoding:           text.UTF8,
 		fieldLen:           0,
-		recordSet:          make([][]*Field, 0, recordCounts),
+		recordSet:          make([][]Field, 0, recordCounts),
 	}
 }
 
-func (e *Encoder) SetHeader(header []*Field) {
+func (e *Encoder) SetHeader(header []Field) {
 	e.header = header
 	if e.fieldLen < len(header) {
 		e.fieldLen = len(header)
 	}
 }
 
-func (e *Encoder) AppendRecord(record []*Field) {
+func (e *Encoder) AppendRecord(record []Field) {
 	e.recordSet = append(e.recordSet, record)
 	if e.fieldLen < len(record) {
 		e.fieldLen = len(record)
@@ -95,7 +95,7 @@ func (e *Encoder) Encode() (string, error) {
 	return text.Encode(e.buf.String(), e.Encoding)
 }
 
-func (e *Encoder) formatRecord(record []*Field, insertSpace bool) error {
+func (e *Encoder) formatRecord(record []Field, insertSpace bool) error {
 	start := 0
 	for i, end := range e.DelimiterPositions {
 		if insertSpace && 0 < i {
@@ -115,7 +115,7 @@ func (e *Encoder) formatRecord(record []*Field, insertSpace bool) error {
 	return nil
 }
 
-func (e *Encoder) addField(field *Field, fieldSize int) error {
+func (e *Encoder) addField(field Field, fieldSize int) error {
 	size := text.ByteSize(field.Contents, e.Encoding)
 	if fieldSize < size {
 		return errors.New(fmt.Sprintf("value is too long: %q for %d byte(s) length field", field.Contents, fieldSize))
