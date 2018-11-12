@@ -2,6 +2,7 @@ package text
 
 import "unicode"
 
+// Calculates string width to be displayed.
 func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	l := 0
 
@@ -20,6 +21,7 @@ func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	return l
 }
 
+// Calculates character width to be displayed.
 func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	switch {
 	case unicode.IsControl(r):
@@ -34,6 +36,7 @@ func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	return 1
 }
 
+// Calculates byte size of a character.
 func RuneByteSize(r rune, encoding Encoding) int {
 	switch encoding {
 	case SJIS:
@@ -51,6 +54,7 @@ func sjisRuneByteSize(r rune) int {
 	return 2
 }
 
+// Calculates byte size of a string.
 func ByteSize(s string, encoding Encoding) int {
 	size := 0
 	switch encoding {
@@ -64,6 +68,7 @@ func ByteSize(s string, encoding Encoding) int {
 	return size
 }
 
+// Returns if a string is Right-to-Left horizontal writing characters.
 func IsRightToLeftLetters(s string) bool {
 	return 0 < len(s) && unicode.In([]rune(s)[0], RightToLeftTable)
 }

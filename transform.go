@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/transform"
 )
 
+// Get a reader to transform character encoding from UTF-8 to another encoding.
 func GetTransformEncoder(r io.Reader, enc Encoding) io.Reader {
 	switch enc {
 	case SJIS:
@@ -18,6 +19,7 @@ func GetTransformEncoder(r io.Reader, enc Encoding) io.Reader {
 	}
 }
 
+// Get a reader to transform character encoding from any encoding to UTF-8.
 func GetTransformDecoder(r io.Reader, enc Encoding) io.Reader {
 	switch enc {
 	case SJIS:
@@ -27,6 +29,7 @@ func GetTransformDecoder(r io.Reader, enc Encoding) io.Reader {
 	}
 }
 
+// Encode a string from UTF-8 to another encoding.
 func Encode(str string, enc Encoding) (string, error) {
 	if enc == UTF8 {
 		return str, nil
@@ -40,6 +43,7 @@ func Encode(str string, enc Encoding) (string, error) {
 	return string(bytes), nil
 }
 
+// Decode a string from any encoding to UTF-8.
 func Decode(str string, enc Encoding) (string, error) {
 	if enc == UTF8 {
 		return str, nil
