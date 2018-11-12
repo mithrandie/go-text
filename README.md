@@ -85,7 +85,7 @@ func main() {
 	
 	e := csv.NewEncoder(len(recordSet))
 	e.Delimiter = ','
-	e.LineBreak = lineBreak.Value()
+	e.LineBreak = lineBreak
 	e.WithoutHeader = true
 	e.Encoding = text.SJIS
 	
@@ -96,7 +96,7 @@ func main() {
 		}
 		e.AppendRecord(r)
 	}
-	csv, _ := e.Encode()
+	encoded, _ := e.Encode()
 	
 	wfp, err := os.Create("example_new.csv")
 	if err != nil {
@@ -104,7 +104,7 @@ func main() {
 	}
 	defer wfp.Close()
 	
-	wfp.WriteString(csv)	
+	wfp.WriteString(encoded)	
 }
 ```
 
@@ -139,7 +139,7 @@ func main() {
 	
 	e := fixedlen.NewEncoder(len(recordSet))
 	e.DelimiterPositions = []int{5, 10, 45, 60}
-	e.LineBreak = lineBreak.Value()
+	e.LineBreak = lineBreak
 	e.WithoutHeader = true
 	e.Encoding = text.SJIS
 	
@@ -244,7 +244,7 @@ func main() {
 	}
 	
 	e := table.NewEncoder(table.GFMTable, len(recordSet))
-	e.LineBreak = text.LF.Value()
+	e.LineBreak = text.LF
 	e.EastAsianEncoding = true
 	e.CountDiacriticalSign = false
 	e.WithoutHeader = false

@@ -9,20 +9,21 @@ import (
 
 type Encoder struct {
 	Delimiter     rune
-	LineBreak     string
+	LineBreak     text.LineBreak
 	WithoutHeader bool
 	Encoding      text.Encoding
 
 	header    []Field
 	recordSet [][]Field
 	fieldLen  int
+	lineBreak string
 	buf       bytes.Buffer
 }
 
 func NewEncoder(recordCounts int) *Encoder {
 	return &Encoder{
 		Delimiter:     ',',
-		LineBreak:     text.LF.Value(),
+		LineBreak:     text.LF,
 		WithoutHeader: false,
 		Encoding:      text.UTF8,
 		fieldLen:      0,
@@ -49,6 +50,8 @@ func (e *Encoder) Encode() (string, error) {
 		return "", nil
 	}
 
+	e.lineBreak = e.LineBreak.Value()
+
 	lines := make([]string, 0, len(e.recordSet)+1)
 
 	if !e.WithoutHeader {
@@ -59,7 +62,7 @@ func (e *Encoder) Encode() (string, error) {
 		lines = append(lines, e.formatRecord(record))
 	}
 
-	return text.Encode(strings.Join(lines, e.LineBreak), e.Encoding)
+	return text.Encode(strings.Join(lines, e.lineBreak), e.Encoding)
 }
 
 func (e *Encoder) formatRecord(record []Field) string {

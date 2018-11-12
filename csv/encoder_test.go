@@ -150,7 +150,7 @@ func TestEncoder_Encode(t *testing.T) {
 		var e *Encoder
 		e = NewEncoder(len(v.Records))
 		e.Delimiter = v.Delimiter
-		e.LineBreak = v.LineBreak.Value()
+		e.LineBreak = v.LineBreak
 		e.WithoutHeader = v.WithoutHeader
 		e.Encoding = v.Encoding
 

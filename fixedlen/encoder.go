@@ -12,20 +12,21 @@ const PadChar = ' '
 
 type Encoder struct {
 	DelimiterPositions DelimiterPositions
-	LineBreak          string
+	LineBreak          text.LineBreak
 	WithoutHeader      bool
 	Encoding           text.Encoding
 
 	header    []Field
 	recordSet [][]Field
 	fieldLen  int
+	lineBreak string
 	buf       bytes.Buffer
 }
 
 func NewEncoder(recordCounts int) *Encoder {
 	return &Encoder{
 		DelimiterPositions: nil,
-		LineBreak:          text.LF.Value(),
+		LineBreak:          text.LF,
 		WithoutHeader:      false,
 		Encoding:           text.UTF8,
 		fieldLen:           0,
@@ -48,6 +49,8 @@ func (e *Encoder) AppendRecord(record []Field) {
 }
 
 func (e *Encoder) Encode() (string, error) {
+	e.lineBreak = e.LineBreak.Value()
+
 	prevPos := 0
 	for _, endPos := range e.DelimiterPositions {
 		if endPos < 0 || endPos <= prevPos {
@@ -84,7 +87,7 @@ func (e *Encoder) Encode() (string, error) {
 
 	for _, record := range e.recordSet {
 		if 0 < e.buf.Len() {
-			e.buf.WriteString(e.LineBreak)
+			e.buf.WriteString(e.lineBreak)
 		}
 
 		if err = e.formatRecord(record, insertSpace); err != nil {

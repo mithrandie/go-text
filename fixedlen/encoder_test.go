@@ -289,7 +289,7 @@ func TestFixedLengthEncoder_Encode(t *testing.T) {
 	for _, v := range fixedLengthEncoderEncodeTests {
 		e := NewEncoder(len(v.Records))
 		e.DelimiterPositions = v.DelimiterPositions
-		e.LineBreak = v.LineBreak.Value()
+		e.LineBreak = v.LineBreak
 		e.WithoutHeader = v.WithoutHeader
 		e.Encoding = v.Encoding
 

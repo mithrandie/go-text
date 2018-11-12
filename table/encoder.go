@@ -19,7 +19,7 @@ const (
 
 type Encoder struct {
 	Format               Format
-	LineBreak            string
+	LineBreak            text.LineBreak
 	EastAsianEncoding    bool
 	CountDiacriticalSign bool
 	Encoding             text.Encoding
@@ -33,13 +33,14 @@ type Encoder struct {
 	header    []Field
 	recordSet [][]Field
 	fieldLen  int
+	lineBreak string
 	buf       bytes.Buffer
 }
 
 func NewEncoder(format Format, recordCounts int) *Encoder {
 	return &Encoder{
 		Format:               format,
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		Encoding:             text.UTF8,
@@ -75,7 +76,7 @@ func (e *Encoder) prepareRecord(record []Field) []Field {
 }
 
 func (e *Encoder) prepareField(field *Field) {
-	lines := strings.Split(e.escape(field.Contents), e.LineBreak)
+	lines := strings.Split(e.escape(field.Contents), "\n")
 
 	width := 0
 	for _, v := range lines {
@@ -93,6 +94,8 @@ func (e *Encoder) Encode() (string, error) {
 	if e.fieldLen < 1 {
 		return "", nil
 	}
+
+	e.lineBreak = e.LineBreak.Value()
 
 	lines := make([]string, 0, len(e.recordSet)+4)
 
@@ -148,7 +151,7 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	return text.Encode(strings.Join(lines, e.LineBreak), e.Encoding)
+	return text.Encode(strings.Join(lines, e.lineBreak), e.Encoding)
 }
 
 func (e *Encoder) formatRecord(record []Field, widths []int) string {
@@ -199,7 +202,7 @@ func (e *Encoder) formatRecord(record []Field, widths []int) string {
 		lines = append(lines, e.buf.String())
 	}
 
-	return strings.Join(lines, e.LineBreak)
+	return strings.Join(lines, e.lineBreak)
 }
 
 func (e *Encoder) formatTextHR(widths []int) string {
@@ -281,7 +284,7 @@ func (e *Encoder) escape(s string) string {
 			case GFMTable, OrgTable:
 				e.buf.WriteString(MarkdownLineBreak)
 			default:
-				e.buf.WriteString(e.LineBreak)
+				e.buf.WriteRune('\n')
 			}
 		case VLine:
 			switch e.Format {

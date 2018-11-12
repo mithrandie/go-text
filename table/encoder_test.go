@@ -12,7 +12,7 @@ var encoderEncodeTests = []struct {
 	Header               []Field
 	Records              [][]Field
 	Alignments           []text.FieldAlignment
-	LineBreak            string
+	LineBreak            text.LineBreak
 	EastAsiaEncoding     bool
 	CountDiacriticalSign bool
 	WithoutHeader        bool
@@ -23,7 +23,7 @@ var encoderEncodeTests = []struct {
 		Format:               PlainTable,
 		Header:               []Field{},
 		Records:              [][]Field{},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -37,7 +37,7 @@ var encoderEncodeTests = []struct {
 			{Contents: "c2", Alignment: text.Centering},
 		},
 		Records:              [][]Field{},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -71,7 +71,7 @@ var encoderEncodeTests = []struct {
 				{Contents: "NULL", Alignment: text.Centering},
 			},
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -118,7 +118,7 @@ var encoderEncodeTests = []struct {
 			text.Centering,
 			text.LeftAligned,
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -154,7 +154,7 @@ var encoderEncodeTests = []struct {
 				{Contents: "", Alignment: text.Centering},
 			},
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -182,7 +182,7 @@ var encoderEncodeTests = []struct {
 				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
 			},
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -213,7 +213,7 @@ var encoderEncodeTests = []struct {
 				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
 			},
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -250,7 +250,7 @@ var encoderEncodeTests = []struct {
 				{Contents: "NULL", Alignment: text.Centering},
 			},
 		},
-		LineBreak:            text.CRLF.Value(),
+		LineBreak:            text.CRLF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
@@ -288,7 +288,7 @@ var encoderEncodeTests = []struct {
 				{Contents: " ab|cdefghijklmnopqrstuvwxyzabcdefg\nhi\"jk日本語あアｱＡ（\n", Alignment: text.LeftAligned},
 			},
 		},
-		LineBreak:            text.LF.Value(),
+		LineBreak:            text.LF,
 		EastAsiaEncoding:     true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
