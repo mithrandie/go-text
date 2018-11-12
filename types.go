@@ -1,6 +1,11 @@
 package text
 
-import "reflect"
+import (
+	"errors"
+	"fmt"
+	"reflect"
+	"strings"
+)
 
 type Encoding string
 
@@ -45,3 +50,31 @@ const (
 )
 
 type RawText []byte
+
+func ParseEncoding(s string) (Encoding, error) {
+	var encoding Encoding
+	switch strings.ToUpper(s) {
+	case "UTF8":
+		encoding = UTF8
+	case "SJIS":
+		encoding = SJIS
+	default:
+		return encoding, errors.New(fmt.Sprintf("%q cannot convert to Encoding", s))
+	}
+	return encoding, nil
+}
+
+func ParseLineBreak(s string) (LineBreak, error) {
+	var lb LineBreak
+	switch strings.ToUpper(s) {
+	case "CRLF":
+		lb = CRLF
+	case "CR":
+		lb = CR
+	case "LF":
+		lb = LF
+	default:
+		return lb, errors.New(fmt.Sprintf("%q cannot convert to LineBreak", s))
+	}
+	return lb, nil
+}
