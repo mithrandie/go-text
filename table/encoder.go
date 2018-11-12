@@ -1,6 +1,7 @@
 package table
 
 import (
+	"bufio"
 	"bytes"
 	"strings"
 
@@ -34,6 +35,8 @@ type Encoder struct {
 	recordSet [][]Field
 	fieldLen  int
 	lineBreak string
+	lineWidth int
+	writer    *bufio.Writer
 	buf       bytes.Buffer
 }
 
@@ -97,7 +100,9 @@ func (e *Encoder) Encode() (string, error) {
 
 	e.lineBreak = e.LineBreak.Value()
 
-	lines := make([]string, 0, len(e.recordSet)+4)
+	var err error
+	buf := new(bytes.Buffer)
+	e.writer = bufio.NewWriter(text.GetTransformWriter(buf, e.Encoding))
 
 	fieldWidths := make([]int, e.fieldLen)
 
@@ -125,36 +130,71 @@ func (e *Encoder) Encode() (string, error) {
 				fieldWidths[i] = fieldWidths[i] + 1
 			}
 		}
+	}
 
+	e.calculateLineWidth(fieldWidths)
+
+	appended := false
+	if e.Format == PlainTable || !e.WithoutHeader {
 		if e.Format == PlainTable {
-			lines = append(lines, e.formatTextHR(fieldWidths))
+			if err = e.formatTextHR(fieldWidths); err != nil {
+				return "", err
+			}
+			if _, err = e.writer.WriteString(e.lineBreak); err != nil {
+				return "", err
+			}
 		}
-		lines = append(lines, e.formatRecord(e.header, fieldWidths))
+		if err = e.formatRecord(e.header, fieldWidths); err != nil {
+			return "", err
+		}
+		if _, err = e.writer.WriteString(e.lineBreak); err != nil {
+			return "", err
+		}
 
 		switch e.Format {
 		case GFMTable:
-			lines = append(lines, e.formatGfmHR(fieldWidths))
+			err = e.formatGfmHR(fieldWidths)
 		case OrgTable:
-			lines = append(lines, e.formatOrgHR(fieldWidths))
+			err = e.formatOrgHR(fieldWidths)
 		default:
-			lines = append(lines, e.formatTextHR(fieldWidths))
+			err = e.formatTextHR(fieldWidths)
 		}
+		if err != nil {
+			return "", err
+		}
+		appended = true
 	}
 
 	if 0 < len(e.recordSet) {
 		for _, record := range e.recordSet {
-			lines = append(lines, e.formatRecord(record, fieldWidths))
+			if appended {
+				if _, err = e.writer.WriteString(e.lineBreak); err != nil {
+					return "", err
+				}
+			} else {
+				appended = true
+			}
+
+			if err = e.formatRecord(record, fieldWidths); err != nil {
+				return "", err
+			}
 		}
 
 		if e.Format == PlainTable {
-			lines = append(lines, e.formatTextHR(fieldWidths))
+			if _, err = e.writer.WriteString(e.lineBreak); err != nil {
+				return "", err
+			}
+			if err = e.formatTextHR(fieldWidths); err != nil {
+				return "", err
+			}
 		}
 	}
 
-	return text.Encode(strings.Join(lines, e.lineBreak), e.Encoding)
+	e.writer.Flush()
+	return buf.String(), nil
 }
 
-func (e *Encoder) formatRecord(record []Field, widths []int) string {
+func (e *Encoder) formatRecord(record []Field, widths []int) error {
 	lineLen := 0
 	for _, f := range record {
 		n := len(f.Lines)
@@ -163,17 +203,20 @@ func (e *Encoder) formatRecord(record []Field, widths []int) string {
 		}
 	}
 
-	lines := make([]string, 0, lineLen)
-
 	for lineIdx := 0; lineIdx < lineLen; lineIdx++ {
-		e.buf.Reset()
+		if 0 < lineIdx {
+			if _, err := e.writer.WriteString(e.lineBreak); err != nil {
+				return err
+			}
+		}
 
+		line := make([]byte, 0, e.lineWidth*2)
 		for i := 0; i < e.fieldLen; i++ {
-			e.buf.WriteRune(VLine)
-			e.buf.WriteRune(PadChar)
+			line = append(line, VLine)
+			line = append(line, PadChar)
 
 			if len(record) <= i || len(record[i].Lines) <= lineIdx || len(record[i].Lines[lineIdx]) < 1 {
-				e.buf.Write(bytes.Repeat([]byte(string(PadChar)), widths[i]+1))
+				line = append(line, bytes.Repeat([]byte{PadChar}, widths[i]+1)...)
 				continue
 			}
 
@@ -186,38 +229,42 @@ func (e *Encoder) formatRecord(record []Field, widths []int) string {
 			switch cellAlign {
 			case text.Centering:
 				halfPadLen := padLen / 2
-				e.buf.Write(bytes.Repeat([]byte(string(PadChar)), halfPadLen))
-				e.buf.WriteString(record[i].Lines[lineIdx])
-				e.buf.Write(bytes.Repeat([]byte(string(PadChar)), (padLen-halfPadLen)+1))
+				line = append(line, bytes.Repeat([]byte(string(PadChar)), halfPadLen)...)
+				line = append(line, record[i].Lines[lineIdx]...)
+				line = append(line, bytes.Repeat([]byte(string(PadChar)), (padLen-halfPadLen)+1)...)
 			case text.RightAligned:
-				e.buf.Write(bytes.Repeat([]byte(string(PadChar)), padLen))
-				e.buf.WriteString(record[i].Lines[lineIdx])
-				e.buf.WriteRune(PadChar)
+				line = append(line, bytes.Repeat([]byte(string(PadChar)), padLen)...)
+				line = append(line, record[i].Lines[lineIdx]...)
+				line = append(line, PadChar)
 			default:
-				e.buf.WriteString(record[i].Lines[lineIdx])
-				e.buf.Write(bytes.Repeat([]byte(string(PadChar)), padLen+1))
+				line = append(line, record[i].Lines[lineIdx]...)
+				line = append(line, bytes.Repeat([]byte(string(PadChar)), padLen+1)...)
 			}
 		}
-		e.buf.WriteRune(VLine)
-		lines = append(lines, e.buf.String())
+		line = append(line, VLine)
+		if _, err := e.writer.Write(line); err != nil {
+			return err
+		}
 	}
 
-	return strings.Join(lines, e.lineBreak)
+	return nil
 }
 
-func (e *Encoder) formatTextHR(widths []int) string {
-	e.buf.Reset()
+func (e *Encoder) formatTextHR(widths []int) error {
+	line := make([]byte, 0, e.lineWidth)
 
 	for _, w := range widths {
-		e.buf.WriteRune(CrossLine)
-		e.buf.Write(bytes.Repeat([]byte(string(HLine)), w+2))
+		line = append(line, CrossLine)
+		line = append(line, bytes.Repeat([]byte{HLine}, w+2)...)
 	}
-	e.buf.WriteRune(CrossLine)
-	return e.buf.String()
+	line = append(line, CrossLine)
+
+	_, err := e.writer.Write(line)
+	return err
 }
 
-func (e *Encoder) formatGfmHR(widths []int) string {
-	e.buf.Reset()
+func (e *Encoder) formatGfmHR(widths []int) error {
+	line := make([]byte, 0, e.lineWidth)
 
 	for i, w := range widths {
 		align := text.NotAligned
@@ -225,40 +272,51 @@ func (e *Encoder) formatGfmHR(widths []int) string {
 			align = e.alignments[i]
 		}
 
-		e.buf.WriteRune(VLine)
-		e.buf.WriteRune(PadChar)
+		line = append(line, VLine)
+		line = append(line, PadChar)
 		switch align {
 		case text.Centering:
-			e.buf.WriteRune(AlignSign)
-			e.buf.Write(bytes.Repeat([]byte(string(HLine)), w-2))
-			e.buf.WriteRune(AlignSign)
+			line = append(line, AlignSign)
+			line = append(line, bytes.Repeat([]byte{HLine}, w-2)...)
+			line = append(line, AlignSign)
 		case text.RightAligned:
-			e.buf.Write(bytes.Repeat([]byte(string(HLine)), w-1))
-			e.buf.WriteRune(AlignSign)
+			line = append(line, bytes.Repeat([]byte{HLine}, w-1)...)
+			line = append(line, AlignSign)
 		case text.LeftAligned:
-			e.buf.WriteRune(AlignSign)
-			e.buf.Write(bytes.Repeat([]byte(string(HLine)), w-1))
+			line = append(line, AlignSign)
+			line = append(line, bytes.Repeat([]byte{HLine}, w-1)...)
 		default:
-			e.buf.Write(bytes.Repeat([]byte(string(HLine)), w))
+			line = append(line, bytes.Repeat([]byte{HLine}, w)...)
 		}
-		e.buf.WriteRune(PadChar)
+		line = append(line, PadChar)
 	}
-	e.buf.WriteRune(VLine)
-	return e.buf.String()
+	line = append(line, VLine)
+
+	_, err := e.writer.Write(line)
+	return err
 }
 
-func (e *Encoder) formatOrgHR(widths []int) string {
-	e.buf.Reset()
+func (e *Encoder) formatOrgHR(widths []int) error {
+	line := make([]byte, 0, e.lineWidth)
 
-	e.buf.WriteRune(VLine)
+	line = append(line, VLine)
 	for i, w := range widths {
 		if 0 < i {
-			e.buf.WriteRune(CrossLine)
+			line = append(line, CrossLine)
 		}
-		e.buf.Write(bytes.Repeat([]byte(string(HLine)), w+2))
+		line = append(line, bytes.Repeat([]byte{HLine}, w+2)...)
 	}
-	e.buf.WriteRune(VLine)
-	return e.buf.String()
+	line = append(line, VLine)
+
+	_, err := e.writer.Write(line)
+	return err
+}
+
+func (e *Encoder) calculateLineWidth(widths []int) {
+	e.lineWidth = 1
+	for _, w := range widths {
+		e.lineWidth = e.lineWidth + w + 3
+	}
 }
 
 func (e *Encoder) escape(s string) string {
