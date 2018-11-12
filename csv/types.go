@@ -5,8 +5,8 @@ type Field struct {
 	Quote    bool
 }
 
-func NewField(contents string, quote bool) *Field {
-	return &Field{
+func NewField(contents string, quote bool) Field {
+	return Field{
 		Contents: contents,
 		Quote:    quote,
 	}
