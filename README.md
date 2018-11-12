@@ -84,19 +84,19 @@ func main() {
 	lineBreak := r.DetectedLineBreak
 	
 	e := csv.NewEncoder(len(recordSet))
-    e.Delimiter = ','
-    e.LineBreak = lineBreak.Value()
-    e.WithoutHeader = true
-    e.Encoding = text.SJIS
+	e.Delimiter = ','
+	e.LineBreak = lineBreak.Value()
+	e.WithoutHeader = true
+	e.Encoding = text.SJIS
 	
-    for _, record := range recordSet {
-    	r := make([]csv.Field, 0, len(record))
-    	for _, field := range record {
-    		r = append(r, csv.NewField(string(field), false))
-    	}
-        e.AppendRecord(r)
-    }
-    csv, _ := e.Encode()
+	for _, record := range recordSet {
+		r := make([]csv.Field, 0, len(record))
+		for _, field := range record {
+			r = append(r, csv.NewField(string(field), false))
+		}
+		e.AppendRecord(r)
+	}
+	csv, _ := e.Encode()
 	
 	wfp, err := os.Create("example_new.csv")
 	if err != nil {
@@ -139,18 +139,18 @@ func main() {
 	
 	e := fixedlen.NewEncoder(len(recordSet))
 	e.DelimiterPositions = []int{5, 10, 45, 60}
-    e.LineBreak = lineBreak.Value()
-    e.WithoutHeader = true
-    e.Encoding = text.SJIS
+	e.LineBreak = lineBreak.Value()
+	e.WithoutHeader = true
+	e.Encoding = text.SJIS
 	
-    for _, record := range recordSet {
-    	r := make([]fixedlen.Field, 0, len(record))
-    	for _, field := range record {
-    		r = append(r, fixedlen.NewField(string(field), text.NotAligned))
-    	}
-        e.AppendRecord(r)
-    }
-    csv, _ := e.Encode()
+	for _, record := range recordSet {
+		r := make([]fixedlen.Field, 0, len(record))
+		for _, field := range record {
+			r = append(r, fixedlen.NewField(string(field), text.NotAligned))
+		}
+		e.AppendRecord(r)
+	}
+	csv, _ := e.Encode()
 	
 	wfp, err := os.Create("example_new.txt")
 	if err != nil {
@@ -190,12 +190,12 @@ func main() {
 	
 	e := json.NewEncoder()
 	e.EscapeType = escapeType
-    e.LineBreak = text.LF
-    e.PrettyPrint = true
-    e.Palette = json.NewJsonPalette()
+	e.LineBreak = text.LF
+	e.PrettyPrint = true
+	e.Palette = json.NewJsonPalette()
 	
-    encoded := e.Encode(structure)
-    fmt.Println(encoded)
+	encoded := e.Encode(structure)
+	fmt.Println(encoded)
 }
 ```
 
@@ -244,19 +244,19 @@ func main() {
 	}
 	
 	e := table.NewEncoder(table.GFMTable, len(recordSet))
-    e.LineBreak = text.LF.Value()
-    e.EastAsianEncoding = true
-    e.CountDiacriticalSign = false
-    e.WithoutHeader = false
+	e.LineBreak = text.LF.Value()
+	e.EastAsianEncoding = true
+	e.CountDiacriticalSign = false
+	e.WithoutHeader = false
     
-    
-    e.SetHeader(header)
-    for _, record := range recordSet {
-    	e.AppendRecord(record)
-    }
-    e.SetFieldAlignments(alignments)
 	
-    encoded, _ := e.Encode()
-    fmt.Println(encoded)
+	e.SetHeader(header)
+	for _, record := range recordSet {
+		e.AppendRecord(record)
+	}
+	e.SetFieldAlignments(alignments)
+	
+	encoded, _ := e.Encode()
+	fmt.Println(encoded)
 }
 ```
