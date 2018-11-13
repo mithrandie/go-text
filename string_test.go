@@ -8,55 +8,77 @@ var widthTests = []struct {
 	String               string
 	EastAsianEncoding    bool
 	CountDiacriticalSign bool
+	CountFormatCode      bool
 	Expect               int
 }{
 	{
 		String:               "日本語\nabc",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               9,
 	},
 	{
 		String:               "日本語\033[33mab\033[0mc",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               9,
 	},
 	{
 		String:               "日本語abc",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               9,
 	},
 	{
 		String:               "العَرَبِيَّة",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               7,
 	},
 	{
 		String:               "العَرَبِيَّة",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: true,
+		CountFormatCode:      false,
 		Expect:               12,
 	},
 	{
 		String:               "(´・ω・｀)",
 		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               12,
 	},
 	{
 		String:               "(´・ω・｀)",
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Expect:               10,
+	},
+	{
+		String:               "abc" + string(0x200b) + "def",
+		EastAsianEncoding:    false,
+		CountDiacriticalSign: false,
+		CountFormatCode:      false,
+		Expect:               6,
+	},
+	{
+		String:               "abc" + string(0x200b) + "def",
+		EastAsianEncoding:    false,
+		CountDiacriticalSign: false,
+		CountFormatCode:      true,
+		Expect:               7,
 	},
 }
 
 func TestWidth(t *testing.T) {
 	for _, v := range widthTests {
-		result := Width(v.String, v.EastAsianEncoding, v.CountDiacriticalSign)
+		result := Width(v.String, v.EastAsianEncoding, v.CountDiacriticalSign, v.CountFormatCode)
 		if result != v.Expect {
 			t.Errorf("width = %d, want %d for %q, %t, %t", result, v.Expect, v.String, v.EastAsianEncoding, v.CountDiacriticalSign)
 		}

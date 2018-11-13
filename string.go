@@ -1,9 +1,11 @@
 package text
 
-import "unicode"
+import (
+	"unicode"
+)
 
 // Calculates string width to be displayed.
-func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool) int {
+func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool, countFormatCode bool) int {
 	l := 0
 
 	inEscSeq := false // Ignore ANSI Escape Sequence
@@ -15,16 +17,18 @@ func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool) int {
 		} else if r == 27 {
 			inEscSeq = true
 		} else {
-			l = l + RuneWidth(r, eastAsianEncoding, countDiacriticalSign)
+			l = l + RuneWidth(r, eastAsianEncoding, countDiacriticalSign, countFormatCode)
 		}
 	}
 	return l
 }
 
 // Calculates character width to be displayed.
-func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool) int {
+func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool, countFormatCode bool) int {
 	switch {
-	case unicode.IsControl(r) || unicode.In(r, ZeroWidthTable):
+	case unicode.IsControl(r):
+		return 0
+	case !countFormatCode && (unicode.In(r, FormatCharTable) || unicode.In(r, ZeroWidthSpaceTable)):
 		return 0
 	case !countDiacriticalSign && unicode.In(r, DiacriticalSignTable):
 		return 0

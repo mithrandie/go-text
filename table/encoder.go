@@ -23,6 +23,7 @@ type Encoder struct {
 	LineBreak            text.LineBreak
 	EastAsianEncoding    bool
 	CountDiacriticalSign bool
+	CountFormatCode      bool
 	Encoding             text.Encoding
 
 	// GFM or Org Table
@@ -46,6 +47,7 @@ func NewEncoder(format Format, recordCounts int) *Encoder {
 		LineBreak:            text.LF,
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
+		CountFormatCode:      false,
 		Encoding:             text.UTF8,
 		WithoutHeader:        false,
 		fieldLen:             0,
@@ -83,7 +85,7 @@ func (e *Encoder) prepareField(field *Field) {
 
 	width := 0
 	for _, v := range lines {
-		l := text.Width(v, e.EastAsianEncoding, e.CountDiacriticalSign)
+		l := text.Width(v, e.EastAsianEncoding, e.CountDiacriticalSign, e.CountFormatCode)
 		if width < l {
 			width = l
 		}
@@ -220,7 +222,7 @@ func (e *Encoder) formatRecord(record []Field, widths []int) error {
 				continue
 			}
 
-			padLen := widths[i] - text.Width(record[i].Lines[lineIdx], e.EastAsianEncoding, e.CountDiacriticalSign)
+			padLen := widths[i] - text.Width(record[i].Lines[lineIdx], e.EastAsianEncoding, e.CountDiacriticalSign, e.CountFormatCode)
 			cellAlign := record[i].Alignment
 			if (cellAlign == text.LeftAligned || cellAlign == text.NotAligned) && text.IsRightToLeftLetters(record[i].Lines[lineIdx]) {
 				cellAlign = text.RightAligned

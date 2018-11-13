@@ -500,12 +500,20 @@ var DiacriticalSignTable = &unicode.RangeTable{
 	},
 }
 
-var ZeroWidthTable = &unicode.RangeTable{
+var FormatCharTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x200b, 0x200f, 1}, // Format Characters
-		{0x2028, 0x202f, 1}, //
-		{0x2060, 0x2069, 1}, //
-		{0xfeff, 0xfeff, 1}, // Zero Width No-Break Space
+		{0x034f, 0x034f, 1},
+		{0x200c, 0x200f, 1},
+		{0x2028, 0x202e, 1},
+		{0x2061, 0x2069, 1},
+	},
+}
+
+var ZeroWidthSpaceTable = &unicode.RangeTable{
+	R16: []unicode.Range16{
+		{0x200b, 0x200b, 1},
+		{0x2060, 0x2063, 1},
+		{0xfeff, 0xfeff, 1},
 	},
 }
 
@@ -517,13 +525,14 @@ var RightToLeftTable = &unicode.RangeTable{
 		{0x0750, 0x077f, 1}, // Arabic Supplement
 		{0x0860, 0x086f, 1}, // Syriac Supplement
 		{0x08a0, 0x08ff, 1}, // Arabic Extended-A
-		{0x200f, 0x200f, 1}, // Right-To-Left Mark
-		{0x202b, 0x202b, 1}, // Right-To-Left Embedding
-		{0x202e, 0x202e, 1}, // Right-To-Left Override
 		{0xfb50, 0xfdff, 1}, // Arabic Presentation Forms-A
 		{0xfe70, 0xfeff, 1}, // Arabic Presentation Forms-B
 	},
 	R32: []unicode.Range32{
+		{0x10ac0, 0x10aff, 1}, // Manichaean
+		{0x10c00, 0x10c4f, 1}, // Old Turkic
+		{0x10f00, 0x10f2f, 1}, // Old Sogdian
+		{0x10f30, 0x10f6f, 1}, // Sogdian
 		{0x1ee00, 0x1eeff, 1}, // Arabic Mathematical Alphabetic Symbols
 	},
 }
