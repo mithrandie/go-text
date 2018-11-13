@@ -481,47 +481,58 @@ var AmbiguousTable = &unicode.RangeTable{
 
 var DiacriticalSignTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x0300, 0x036f, 1}, //Combining Diacritical Marks
-		{0x0591, 0x05af, 1}, //Hebrew Cantillation Marks
-		{0x05b0, 0x05bd, 1}, //Hebrew Points
-		{0x05bf, 0x05bf, 1}, //Hebrew Points
-		{0x05c1, 0x05c2, 1}, //Hebrew Points
-		{0x05c4, 0x05c5, 1}, //Hebrew Points
-		{0x05c7, 0x05c7, 1}, //Hebrew Points
-		{0x064b, 0x0652, 1}, //Arabic Tashkil from ISO 8859-6
-		{0x0653, 0x065f, 1}, //Arabic Combining Marks
-		{0x0670, 0x0670, 1}, //Arabic Tashkil
-		{0x08a0, 0x08ff, 1}, //Arabic Extended-A
-		{0x2028, 0x202f, 1}, //Format Characters
-		{0xfbb2, 0xfbc1, 1}, //Arabic pedagogical symbols
-		{0xfeff, 0xfeff, 1}, //Arabic Zero Width No-Break Space
+		{0x0300, 0x036f, 1}, // COMBINING GRAVE ACCENT..COMBINING LATIN SMALL LETTER X
+		{0x0591, 0x05af, 1}, // Hebrew Cantillation Marks
+		{0x05b0, 0x05bd, 1}, // Hebrew Points
+		{0x05bf, 0x05bf, 1}, // Hebrew Points
+		{0x05c1, 0x05c2, 1}, // Hebrew Points
+		{0x05c4, 0x05c5, 1}, // Hebrew Points
+		{0x05c7, 0x05c7, 1}, // Hebrew Points
+		{0x064b, 0x0652, 1}, // Arabic Tashkil from ISO 8859-6
+		{0x0653, 0x065f, 1}, // Arabic Combining Marks
+		{0x0670, 0x0670, 1}, // Arabic Tashkil
+		{0x08a0, 0x08ff, 1}, // Arabic Extended-A
+		{0x1ab0, 0x1aff, 1}, // Combining Diacritical Marks Extended
+		{0x1dc0, 0x1dff, 1}, // Combining Diacritical Marks Supplement
+		{0x20d0, 0x20ff, 1}, // Combining Diacritical Marks for Symbols
+		{0xfbb2, 0xfbc1, 1}, // Arabic pedagogical symbols
+		{0xfe20, 0xfe2f, 1}, // Combining Half Marks
+	},
+}
+
+var ZeroWidthTable = &unicode.RangeTable{
+	R16: []unicode.Range16{
+		{0x200b, 0x200f, 1}, // Format Characters
+		{0x2028, 0x202f, 1}, //
+		{0x2060, 0x2069, 1}, //
+		{0xfeff, 0xfeff, 1}, // Zero Width No-Break Space
 	},
 }
 
 var RightToLeftTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x0590, 0x05ff, 1}, //Hebrew
-		{0x0600, 0x06ff, 1}, //Arabic
-		{0x0700, 0x074f, 1}, //Syriac
-		{0x0750, 0x077f, 1}, //Arabic Supplement
-		{0x0860, 0x086f, 1}, //Syriac Supplement
-		{0x08a0, 0x08ff, 1}, //Arabic Extended-A
-		{0x200f, 0x200f, 1}, //Right-To-Left Mark
-		{0x202b, 0x202b, 1}, //Right-To-Left Embedding
-		{0x202e, 0x202e, 1}, //Right-To-Left Override
-		{0xfb50, 0xfdff, 1}, //Arabic Presentation Forms-A
-		{0xfe70, 0xfeff, 1}, //Arabic Presentation Forms-B
+		{0x0590, 0x05ff, 1}, // Hebrew
+		{0x0600, 0x06ff, 1}, // Arabic
+		{0x0700, 0x074f, 1}, // Syriac
+		{0x0750, 0x077f, 1}, // Arabic Supplement
+		{0x0860, 0x086f, 1}, // Syriac Supplement
+		{0x08a0, 0x08ff, 1}, // Arabic Extended-A
+		{0x200f, 0x200f, 1}, // Right-To-Left Mark
+		{0x202b, 0x202b, 1}, // Right-To-Left Embedding
+		{0x202e, 0x202e, 1}, // Right-To-Left Override
+		{0xfb50, 0xfdff, 1}, // Arabic Presentation Forms-A
+		{0xfe70, 0xfeff, 1}, // Arabic Presentation Forms-B
 	},
 	R32: []unicode.Range32{
-		{0x1ee00, 0x1eeff, 1}, //Arabic Mathematical Alphabetic Symbols
+		{0x1ee00, 0x1eeff, 1}, // Arabic Mathematical Alphabetic Symbols
 	},
 }
 
 var SJISSingleByteTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x0020, 0x007e, 1}, //ASCII
+		{0x0020, 0x007e, 1}, // ASCII
 		{0x00a5, 0x00a5, 1},
 		{0x203e, 0x203e, 1},
-		{0xff61, 0xff9f, 1}, //Half Width Katakana
+		{0xff61, 0xff9f, 1}, // Half Width Katakana
 	},
 }

@@ -1,6 +1,8 @@
 package text
 
-import "testing"
+import (
+	"testing"
+)
 
 var widthTests = []struct {
 	String               string
@@ -144,6 +146,20 @@ func TestIsRightToLeftLetters(t *testing.T) {
 	}
 
 	s = "العَرَبِيَّة"
+	expect = true
+	result = IsRightToLeftLetters(s)
+	if result != expect {
+		t.Errorf("right-to-left letters = %t, want %t for %q", result, expect, s)
+	}
+
+	s = "\033[33m" + "العَرَبِيَّة" + "\033[0m"
+	expect = true
+	result = IsRightToLeftLetters(s)
+	if result != expect {
+		t.Errorf("right-to-left letters = %t, want %t for %q", result, expect, s)
+	}
+
+	s = "\033[33m1 " + "العَرَبِيَّة" + "\033[0m"
 	expect = true
 	result = IsRightToLeftLetters(s)
 	if result != expect {

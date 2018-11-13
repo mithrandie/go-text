@@ -24,7 +24,7 @@ func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool) int {
 // Calculates character width to be displayed.
 func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	switch {
-	case unicode.IsControl(r):
+	case unicode.IsControl(r) || unicode.In(r, ZeroWidthTable):
 		return 0
 	case !countDiacriticalSign && unicode.In(r, DiacriticalSignTable):
 		return 0
@@ -70,5 +70,20 @@ func ByteSize(s string, encoding Encoding) int {
 
 // Returns if a string is Right-to-Left horizontal writing characters.
 func IsRightToLeftLetters(s string) bool {
-	return 0 < len(s) && unicode.In([]rune(s)[0], RightToLeftTable)
+	inEscSeq := false // Ignore ANSI Escape Sequence
+	for _, r := range s {
+		if inEscSeq {
+			if unicode.IsLetter(r) {
+				inEscSeq = false
+			}
+		} else if r == 27 {
+			inEscSeq = true
+		} else {
+			if !unicode.IsLetter(r) {
+				continue
+			}
+			return unicode.In(r, RightToLeftTable)
+		}
+	}
+	return false
 }

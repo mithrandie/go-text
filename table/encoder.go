@@ -222,7 +222,7 @@ func (e *Encoder) formatRecord(record []Field, widths []int) error {
 
 			padLen := widths[i] - text.Width(record[i].Lines[lineIdx], e.EastAsianEncoding, e.CountDiacriticalSign)
 			cellAlign := record[i].Alignment
-			if cellAlign == text.LeftAligned && text.IsRightToLeftLetters(record[i].Lines[lineIdx]) {
+			if (cellAlign == text.LeftAligned || cellAlign == text.NotAligned) && text.IsRightToLeftLetters(record[i].Lines[lineIdx]) {
 				cellAlign = text.RightAligned
 			}
 
