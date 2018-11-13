@@ -9,13 +9,15 @@ import (
 )
 
 var readAllTests = []struct {
-	Name      string
-	Encoding  text.Encoding
-	Delimiter rune
-	Input     string
-	Output    [][]text.RawText
-	LineBreak text.LineBreak
-	Error     string
+	Name        string
+	Encoding    text.Encoding
+	Delimiter   rune
+	WithoutNull bool
+	Input       string
+	Output      [][]text.RawText
+	LineBreak   text.LineBreak
+	EnclosedAll bool
+	Error       string
 }{
 	{
 		Name:  "NewLineLF",
@@ -118,6 +120,17 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
+		Name:        "Without Null",
+		Input:       "\"a\",\"b\",\"1\"\n\"d\",,2",
+		WithoutNull: true,
+		Output: [][]text.RawText{
+			{text.RawText("a"), text.RawText("b"), text.RawText("1")},
+			{text.RawText("d"), text.RawText(""), text.RawText("2")},
+		},
+		LineBreak:   text.LF,
+		EnclosedAll: true,
+	},
+	{
 		Name:  "ExtraneousQuote",
 		Input: "a,\"b\",\"ccc\ncc\nd,e,",
 		Error: "line 3, column 5: extraneous \" in field",
@@ -146,6 +159,7 @@ func TestReader_ReadAll(t *testing.T) {
 		if v.Delimiter != 0 {
 			r.Delimiter = v.Delimiter
 		}
+		r.WithoutNull = v.WithoutNull
 
 		records, err := r.ReadAll()
 
@@ -165,6 +179,10 @@ func TestReader_ReadAll(t *testing.T) {
 
 		if r.DetectedLineBreak != v.LineBreak {
 			t.Errorf("%s: line break = %q, want %q", v.Name, r.DetectedLineBreak, v.LineBreak)
+		}
+
+		if r.EnclosedAll != v.EnclosedAll {
+			t.Errorf("%s: enclosed all = %t, want %t", v.Name, r.EnclosedAll, v.EnclosedAll)
 		}
 	}
 }

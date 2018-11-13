@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"unicode"
 
 	"github.com/mithrandie/go-text"
 )
@@ -26,6 +27,7 @@ type Reader struct {
 	FieldsPerRecord int
 
 	DetectedLineBreak text.LineBreak
+	EnclosedAll       bool
 }
 
 func NewReader(r io.Reader, enc text.Encoding) *Reader {
@@ -37,6 +39,7 @@ func NewReader(r io.Reader, enc text.Encoding) *Reader {
 		line:            1,
 		column:          0,
 		FieldsPerRecord: 0,
+		EnclosedAll:     true,
 	}
 }
 
@@ -158,7 +161,7 @@ Read:
 	for {
 		lineBreak = ""
 
-		r1, _, err := r.reader.ReadRune()
+		ch, _, err := r.reader.ReadRune()
 		r.column++
 
 		if err != nil {
@@ -171,30 +174,30 @@ Read:
 			return quoted, eol, err
 		}
 
-		switch r1 {
+		switch ch {
 		case '\r':
-			r2, _, _ := r.reader.ReadRune()
-			if r2 == '\n' {
+			nxtCh, _, _ := r.reader.ReadRune()
+			if nxtCh == '\n' {
 				lineBreak = text.CRLF
 			} else {
 				r.reader.UnreadRune()
 				lineBreak = text.CR
 			}
-			r1 = '\n'
+			ch = '\n'
 		case '\n':
 			lineBreak = text.LF
 		}
-		if r1 == '\n' {
+		if ch == '\n' {
 			r.line++
 			r.column = 0
 		}
 
 		if quoted {
 			if escaped {
-				switch r1 {
+				switch ch {
 				case '"':
 					escaped = false
-					r.recordBuf.WriteRune(r1)
+					r.recordBuf.WriteRune(ch)
 					continue
 				case r.Delimiter:
 					break Read
@@ -210,18 +213,18 @@ Read:
 				}
 			}
 
-			switch r1 {
+			switch ch {
 			case '"':
 				escaped = true
 			case '\n':
 				r.recordBuf.WriteString(lineBreak.Value())
 			default:
-				r.recordBuf.WriteRune(r1)
+				r.recordBuf.WriteRune(ch)
 			}
 			continue
 		}
 
-		switch r1 {
+		switch ch {
 		case '\n':
 			if r.DetectedLineBreak == "" {
 				r.DetectedLineBreak = lineBreak
@@ -234,10 +237,13 @@ Read:
 			if startPos == r.recordBuf.Len() {
 				quoted = true
 			} else {
-				r.recordBuf.WriteRune(r1)
+				r.recordBuf.WriteRune(ch)
 			}
 		default:
-			r.recordBuf.WriteRune(r1)
+			if r.EnclosedAll && unicode.IsLetter(ch) {
+				r.EnclosedAll = false
+			}
+			r.recordBuf.WriteRune(ch)
 		}
 	}
 
