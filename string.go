@@ -26,7 +26,7 @@ func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool) int {
 	switch {
 	case unicode.IsControl(r):
 		return 0
-	case !countDiacriticalSign && unicode.In(r, ZeroWidthTable):
+	case !countDiacriticalSign && unicode.In(r, DiacriticalSignTable):
 		return 0
 	case unicode.In(r, FullWidthTable):
 		return 2
