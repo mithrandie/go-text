@@ -3,6 +3,8 @@ package json
 import (
 	"testing"
 
+	"github.com/mithrandie/go-text/color"
+
 	"github.com/mithrandie/go-text"
 )
 
@@ -297,6 +299,8 @@ var encoderEncodeTests = []struct {
 }
 
 func TestEncoder_Encode(t *testing.T) {
+	color.UseEffect = true
+
 	palette := NewJsonPalette()
 
 	for _, v := range encoderEncodeTests {
@@ -316,4 +320,6 @@ func TestEncoder_Encode(t *testing.T) {
 			t.Errorf("result = %q, want %q for EscapeType:%d PrettyPrint:%t Input:%#v", result, v.Expect, v.Escape, v.PrettyPrint, v.Input)
 		}
 	}
+
+	color.UseEffect = false
 }
