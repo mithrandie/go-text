@@ -1,6 +1,7 @@
 package color
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -102,6 +103,162 @@ func TestEffector_Render(t *testing.T) {
 		result := e.Render(v.Text)
 		if result != v.Expect {
 			t.Errorf("result = %q, want %q for %s", result, v.Expect, v.Name)
+		}
+	}
+}
+
+var effectorExportConfigTests = []struct {
+	Effector Effector
+	Expect   EffectorConfig
+}{
+	{
+		Effector: Effector{
+			Enclose: true,
+			effects: []EffectCode{Bold, Italic},
+			fgColor: color8{color: Cyan},
+			bgColor: nil,
+		},
+		Expect: EffectorConfig{
+			Effects:    []string{"Bold", "Italic"},
+			Foreground: "Cyan",
+			Background: nil,
+		},
+	},
+	{
+		Effector: Effector{
+			Enclose: false,
+			effects: nil,
+			fgColor: nil,
+			bgColor: color256{color: 45},
+		},
+		Expect: EffectorConfig{
+			Effects:    []string{},
+			Foreground: nil,
+			Background: 45,
+		},
+	},
+	{
+		Effector: Effector{
+			Enclose: true,
+			effects: []EffectCode{},
+			fgColor: colorRGB{red: 24, green: 165, blue: 45},
+			bgColor: nil,
+		},
+		Expect: EffectorConfig{
+			Effects:    []string{},
+			Foreground: []int{24, 165, 45},
+			Background: nil,
+		},
+	},
+}
+
+func TestEffector_ExportConfig(t *testing.T) {
+	for _, v := range effectorExportConfigTests {
+		result := v.Effector.ExportConfig()
+		if !reflect.DeepEqual(result, v.Expect) {
+			t.Errorf("result = %#v, want %#v for %#v", result, v.Expect, v.Effector)
+		}
+	}
+}
+
+var generateEffectorTests = []struct {
+	Config EffectorConfig
+	Expect *Effector
+	Error  string
+}{
+	{
+		Config: EffectorConfig{
+			Effects:    []string{"Bold", "Italic"},
+			Foreground: "Cyan",
+			Background: nil,
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{Bold, Italic},
+			fgColor:  color8{color: Cyan},
+			bgColor:  nil,
+			sequence: "\033[36;1;3m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: nil,
+			Background: 45,
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  nil,
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    nil,
+			Foreground: []int{24, 165, 45},
+			Background: nil,
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  colorRGB{red: 24, green: 165, blue: 45},
+			bgColor:  nil,
+			sequence: "\033[38;2;24;165;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{"Bold", "invalid"},
+			Foreground: "Cyan",
+			Background: nil,
+		},
+		Error: "\"invalid\" cannot convert to EffectCode",
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{"Bold"},
+			Foreground: "invalid",
+			Background: nil,
+		},
+		Error: "\"invalid\" cannot convert to Color Code",
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{"Bold"},
+			Foreground: nil,
+			Background: []int{1, 0},
+		},
+		Error: "[1 0] cannot convert to color",
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{"Bold"},
+			Foreground: nil,
+			Background: true,
+		},
+		Error: "true cannot convert to color",
+	},
+}
+
+func TestGenerateEffector(t *testing.T) {
+	for _, v := range generateEffectorTests {
+		result, err := GenerateEffector(v.Config)
+		if err != nil {
+			if len(v.Error) < 1 {
+				t.Errorf("unexpected error %q for %v", err.Error(), v.Config)
+			} else if err.Error() != v.Error {
+				t.Errorf("error %q, want error %q for %v", err, v.Error, v.Config)
+			}
+			continue
+		}
+		if 0 < len(v.Error) {
+			t.Errorf("no error, want error %q for %v", v.Error, v.Config)
+			continue
+		}
+		if !reflect.DeepEqual(result, v.Expect) {
+			t.Errorf("result = %#v, want %#v for %v", result, v.Expect, v.Config)
 		}
 	}
 }
