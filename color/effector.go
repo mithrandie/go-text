@@ -147,7 +147,7 @@ func (e *Effector) GenerateSequence() {
 }
 
 func (e *Effector) Render(s string) string {
-	if !UseEffect || len(e.sequence) < 1 {
+	if len(e.sequence) < 1 {
 		return s
 	}
 
