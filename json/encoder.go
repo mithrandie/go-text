@@ -112,11 +112,15 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 		for _, v := range array {
 			strs = append(strs, elementIndent+e.encodeStructure(v, depth+1))
 		}
-		encoded = string(BeginArray) +
-			e.lineBreak +
-			strings.Join(strs[:], string(ValueSeparator)+e.lineBreak) +
-			e.lineBreak +
-			indent + string(EndArray)
+		if len(strs) < 1 {
+			encoded = string(BeginArray) + string(EndArray)
+		} else {
+			encoded = string(BeginArray) +
+				e.lineBreak +
+				strings.Join(strs[:], string(ValueSeparator)+e.lineBreak) +
+				e.lineBreak +
+				indent + string(EndArray)
+		}
 	case Number:
 		encoded = e.effect(NumberEffect, structure.Encode())
 	case String:

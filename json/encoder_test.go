@@ -150,6 +150,10 @@ var encoderEncodeTests = []struct {
 									Key:   "akey2",
 									Value: Null{},
 								},
+								{
+									Key:   "akey3",
+									Value: Array{},
+								},
 							},
 						},
 						Object{
@@ -180,7 +184,8 @@ var encoderEncodeTests = []struct {
 			"  \"key2\": [\n" +
 			"    {\n" +
 			"      \"akey1\": true,\n" +
-			"      \"akey2\": null\n" +
+			"      \"akey2\": null,\n" +
+			"      \"akey3\": []\n" +
 			"    },\n" +
 			"    {\n" +
 			"      \"akey1\": -0.0000023,\n" +
