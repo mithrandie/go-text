@@ -125,9 +125,12 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 		encoded = e.effect(NumberEffect, structure.Encode())
 	case String:
 		str := structure.(String).Raw()
-		decoded, _, err := e.decoder.Decode(str)
-		if err == nil {
-			encoded = e.encodeStructure(decoded, depth)
+		if 0 < len(str) {
+			if decoded, _, err := e.decoder.Decode(str); err == nil {
+				encoded = e.encodeStructure(decoded, depth)
+			} else {
+				encoded = e.effect(StringEffect, e.formatString(str))
+			}
 		} else {
 			encoded = e.effect(StringEffect, e.formatString(str))
 		}

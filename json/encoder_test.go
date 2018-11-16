@@ -170,6 +170,10 @@ var encoderEncodeTests = []struct {
 										String("C"),
 									},
 								},
+								{
+									Key:   "akey3",
+									Value: String(""),
+								},
 							},
 						},
 					},
@@ -193,7 +197,8 @@ var encoderEncodeTests = []struct {
 			"        \"A\",\n" +
 			"        \"B\",\n" +
 			"        \"C\"\n" +
-			"      ]\n" +
+			"      ],\n" +
+			"      \"akey3\": \"\"\n" +
 			"    }\n" +
 			"  ]\n" +
 			"}",
