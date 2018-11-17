@@ -192,7 +192,9 @@ func (e *Encoder) Encode() (string, error) {
 		}
 	}
 
-	e.writer.Flush()
+	if err = e.writer.Flush(); err != nil {
+		return "", err
+	}
 	return buf.String(), nil
 }
 

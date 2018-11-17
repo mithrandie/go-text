@@ -108,6 +108,6 @@ func (e *Writer) addField(field Field, fieldSize int) error {
 	return nil
 }
 
-func (e *Writer) Flush() {
-	e.writer.Flush()
+func (e *Writer) Flush() error {
+	return e.writer.Flush()
 }

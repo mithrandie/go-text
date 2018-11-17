@@ -81,8 +81,8 @@ func (e *Writer) Write(record []Field) error {
 	return nil
 }
 
-func (e *Writer) Flush() {
-	e.writer.Flush()
+func (e *Writer) Flush() error {
+	return e.writer.Flush()
 }
 
 func (e *Writer) includeDelimiter(s string) bool {
