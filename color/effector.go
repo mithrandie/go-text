@@ -3,6 +3,7 @@ package color
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -234,21 +235,61 @@ func parseColor(i interface{}) (color, error) {
 		return nil, nil
 	}
 
-	switch i.(type) {
-	case string:
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.String:
 		c, err := ParseColorCode(i.(string))
 		if err != nil {
 			return nil, err
 		}
 		return color8{color: c}, nil
-	case int:
-		return color256{color: i.(int)}, nil
-	case []int:
-		rgb := i.([]int)
-		if len(rgb) != 3 {
-			return nil, errors.New(fmt.Sprintf("%v cannot convert to color", i))
+	case reflect.Slice:
+		s := reflect.ValueOf(i)
+		if s.Len() == 3 {
+			rgb := make([]int, 0, 3)
+			for j := 0; j < s.Len(); j++ {
+				if n, err := parseToInt(s.Index(j).Interface()); err == nil {
+					rgb = append(rgb, n)
+				}
+			}
+			if len(rgb) == 3 {
+				return colorRGB{red: rgb[0], green: rgb[1], blue: rgb[2]}, nil
+			}
 		}
-		return colorRGB{red: rgb[0], green: rgb[1], blue: rgb[2]}, nil
+	default:
+		if n, err := parseToInt(i); err == nil {
+			return color256{color: n}, nil
+		}
 	}
 	return nil, errors.New(fmt.Sprintf("%v cannot convert to color", i))
+}
+
+func parseToInt(i interface{}) (int, error) {
+	switch i.(type) {
+	case float32:
+		return int(i.(float32)), nil
+	case float64:
+		return int(i.(float64)), nil
+	case int:
+		return i.(int), nil
+	case int8:
+		return int(i.(int8)), nil
+	case int16:
+		return int(i.(int16)), nil
+	case int32:
+		return int(i.(int32)), nil
+	case int64:
+		return int(i.(int64)), nil
+	case uint:
+		return int(i.(uint)), nil
+	case uint8:
+		return int(i.(uint8)), nil
+	case uint16:
+		return int(i.(uint16)), nil
+	case uint32:
+		return int(i.(uint32)), nil
+	case uint64:
+		return int(i.(uint64)), nil
+	default:
+		return 0, errors.New(fmt.Sprintf("%v cannot convert to int", i))
+	}
 }

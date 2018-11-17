@@ -210,6 +210,104 @@ var generateEffectorTests = []struct {
 	},
 	{
 		Config: EffectorConfig{
+			Effects:    nil,
+			Foreground: []interface{}{24, 165, 45},
+			Background: nil,
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  colorRGB{red: 24, green: 165, blue: 45},
+			bgColor:  nil,
+			sequence: "\033[38;2;24;165;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: float32(45),
+			Background: float64(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: int(45),
+			Background: int8(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: int16(45),
+			Background: int32(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: int64(45),
+			Background: uint(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: uint8(45),
+			Background: uint16(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
+			Effects:    []string{},
+			Foreground: uint32(45),
+			Background: uint64(45),
+		},
+		Expect: &Effector{
+			Enclose:  true,
+			effects:  []EffectCode{},
+			fgColor:  color256{color: 45},
+			bgColor:  color256{color: 45},
+			sequence: "\033[48;5;45;38;5;45m",
+		},
+	},
+	{
+		Config: EffectorConfig{
 			Effects:    []string{"Bold", "invalid"},
 			Foreground: "Cyan",
 			Background: nil,
