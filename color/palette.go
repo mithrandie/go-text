@@ -45,6 +45,12 @@ func (p *Palette) ExportConfig() PaletteConfig {
 	}
 }
 
+func (p *Palette) Merge(p2 *Palette) {
+	for k, v := range p2.effects {
+		p.effects[k] = v
+	}
+}
+
 func GeneratePalette(config PaletteConfig) (*Palette, error) {
 	p := NewPalette()
 	for k, ec := range config.Effectors {

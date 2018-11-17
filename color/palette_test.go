@@ -64,7 +64,7 @@ func TestPalette_Render(t *testing.T) {
 	}
 }
 
-var paletteExportConfig = []struct {
+var paletteExportConfigTests = []struct {
 	Palette Palette
 	Expect  PaletteConfig
 }{
@@ -103,10 +103,82 @@ var paletteExportConfig = []struct {
 }
 
 func TestPalette_ExportConfig(t *testing.T) {
-	for _, v := range paletteExportConfig {
+	for _, v := range paletteExportConfigTests {
 		result := v.Palette.ExportConfig()
 		if !reflect.DeepEqual(result, v.Expect) {
 			t.Errorf("result = %#v, want %#v for %#v", result, v.Expect, v.Palette)
+		}
+	}
+}
+
+var paletteMergeTests = []struct {
+	Palette  *Palette
+	Palette2 *Palette
+	Expect   *Palette
+}{
+	{
+		Palette: &Palette{
+			effects: map[string]*Effector{
+				"color1": {
+					Enclose: true,
+					effects: []EffectCode{Bold, Italic},
+					fgColor: color8{color: Cyan},
+					bgColor: nil,
+				},
+				"color2": {
+					Enclose: true,
+					effects: []EffectCode{},
+					fgColor: nil,
+					bgColor: color8{color: Blue},
+				},
+			},
+		},
+		Palette2: &Palette{
+			effects: map[string]*Effector{
+				"color2": {
+					Enclose: true,
+					effects: []EffectCode{Bold},
+					fgColor: color8{color: Red},
+					bgColor: nil,
+				},
+				"color3": {
+					Enclose: true,
+					effects: []EffectCode{},
+					fgColor: nil,
+					bgColor: color8{color: Yellow},
+				},
+			},
+		},
+		Expect: &Palette{
+			effects: map[string]*Effector{
+				"color1": {
+					Enclose: true,
+					effects: []EffectCode{Bold, Italic},
+					fgColor: color8{color: Cyan},
+					bgColor: nil,
+				},
+				"color2": {
+					Enclose: true,
+					effects: []EffectCode{Bold},
+					fgColor: color8{color: Red},
+					bgColor: nil,
+				},
+				"color3": {
+					Enclose: true,
+					effects: []EffectCode{},
+					fgColor: nil,
+					bgColor: color8{color: Yellow},
+				},
+			},
+		},
+	},
+}
+
+func TestPalette_Merge(t *testing.T) {
+	for _, v := range paletteMergeTests {
+		v.Palette.Merge(v.Palette2)
+		if !reflect.DeepEqual(v.Palette, v.Expect) {
+			t.Errorf("result = %#v, want %#v for %#v", v.Palette, v.Expect, v.Palette2)
 		}
 	}
 }
