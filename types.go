@@ -14,8 +14,13 @@ const (
 	SJIS Encoding = "SJIS"
 )
 
+var EncodingLiteral = map[Encoding]string{
+	UTF8: "UTF8",
+	SJIS: "SJIS",
+}
+
 func (e Encoding) String() string {
-	return reflect.ValueOf(e).String()
+	return EncodingLiteral[e]
 }
 
 type LineBreak string
@@ -26,7 +31,7 @@ const (
 	CRLF LineBreak = "\r\n"
 )
 
-var lineBreakLiterals = map[LineBreak]string{
+var LineBreakLiteral = map[LineBreak]string{
 	CR:   "CR",
 	LF:   "LF",
 	CRLF: "CRLF",
@@ -37,7 +42,7 @@ func (lb LineBreak) Value() string {
 }
 
 func (lb LineBreak) String() string {
-	return lineBreakLiterals[lb]
+	return LineBreakLiteral[lb]
 }
 
 type FieldAlignment int
