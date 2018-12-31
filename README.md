@@ -190,6 +190,58 @@ func main() {
 }
 ```
 
+### ltsv
+Supports reading and writing LTSV Format.
+
+```go
+package main
+
+import (
+	"os"
+	
+	"github.com/mithrandie/go-text"
+	"github.com/mithrandie/go-text/ltsv"
+)
+
+func main() {
+	fp, err := os.Open("example.txt")
+	if err != nil {
+		panic("file open error")
+	}
+	defer fp.Close()
+	
+	r := ltsv.NewReader(fp, text.UTF8)
+	r.WithoutNull = true
+	recordSet, err := r.ReadAll()
+	if err != nil {
+		panic("ltsv read error")
+	}
+	
+	header := r.Header.Fields()
+	lineBreak := r.DetectedLineBreak
+	
+	wfp, err := os.Create("example_new.ltsv")
+	if err != nil {
+		panic("file open error")
+	}
+	defer wfp.Close()
+
+	w, err := ltsv.NewWriter(wfp, header, lineBreak, text.UTF8)
+	if err != nil {
+		panic("ltsv writer generation error")
+	}
+	
+	for _, record := range recordSet {
+		r := make([]string, 0, len(record))
+		for _, field := range record {
+			r = append(r, string(field))
+		}
+		w.Write(r)
+	}
+	w.Flush()
+}
+```
+
 ### table
 Supports writing text tables.
 
