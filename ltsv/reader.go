@@ -73,17 +73,22 @@ type Reader struct {
 	DetectedLineBreak text.LineBreak
 }
 
-func NewReader(r io.Reader, enc text.Encoding) *Reader {
+func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
+	reader, err := text.SkipBOM(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Reader{
 		WithoutNull: false,
-		reader:      bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:      bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:        1,
 		column:      0,
 		keyBuf:      new(bytes.Buffer),
 		valueBuf:    new(bytes.Buffer),
 		record:      make(Record),
 		Header:      NewHeader(),
-	}
+	}, nil
 }
 
 func (r *Reader) newError(s string) error {

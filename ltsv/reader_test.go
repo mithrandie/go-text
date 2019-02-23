@@ -113,11 +113,39 @@ var readAllTests = []struct {
 		Input:       "f1:v1\tf2\tf3:v3\nf1:v4\tf2:v5\tf3:v6",
 		Error:       "line 1, column 9: missing field separator",
 	},
+	{
+		Name:        "UTF8 with BOM",
+		Encoding:    text.UTF8M,
+		WithoutNull: false,
+		Input:       string(text.UTF8BOM()) + "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
+		Output: [][]text.RawText{
+			{text.RawText("v1"), text.RawText("v2"), text.RawText("v3")},
+			{text.RawText("v4"), text.RawText("v5"), text.RawText("v6")},
+		},
+		Fields:    []string{"f1", "f2", "f3"},
+		LineBreak: text.LF,
+	},
+	{
+		Name:        "BOM does not exist",
+		Encoding:    text.UTF8M,
+		WithoutNull: false,
+		Input:       "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
+		Error:       "byte order mark for UTF-8 does not exist",
+	},
 }
 
 func TestReader_ReadAll(t *testing.T) {
 	for _, v := range readAllTests {
-		r := NewReader(strings.NewReader(v.Input), v.Encoding)
+		r, err := NewReader(strings.NewReader(v.Input), v.Encoding)
+		if err != nil {
+			if v.Error == "" {
+				t.Errorf("%s: unexpected error %q", v.Name, err.Error())
+			} else if v.Error != err.Error() {
+				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
+			}
+			continue
+		}
+
 		r.WithoutNull = v.WithoutNull
 
 		records, err := r.ReadAll()
@@ -128,6 +156,10 @@ func TestReader_ReadAll(t *testing.T) {
 			} else if v.Error != err.Error() {
 				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
 			}
+			continue
+		}
+		if 0 < len(v.Error) {
+			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
 			continue
 		}
 

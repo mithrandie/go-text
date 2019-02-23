@@ -150,11 +150,35 @@ var readAllTests = []struct {
 		Input: "a,b,c\nd,e,f,g\nh,i,j",
 		Error: "line 2, column 6: wrong number of fields in line",
 	},
+	{
+		Name:     "UTF8 with BOM",
+		Input:    string(text.UTF8BOM()) + "a,b,c\nd,e,f",
+		Encoding: text.UTF8M,
+		Output: [][]text.RawText{
+			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
+			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
+		},
+		LineBreak: text.LF,
+	},
+	{
+		Name:     "BOM does not exist error",
+		Input:    "a,b,c\nd,e,f",
+		Encoding: text.UTF8M,
+		Error:    "byte order mark for UTF-8 does not exist",
+	},
 }
 
 func TestReader_ReadAll(t *testing.T) {
 	for _, v := range readAllTests {
-		r := NewReader(strings.NewReader(v.Input), v.Encoding)
+		r, err := NewReader(strings.NewReader(v.Input), v.Encoding)
+		if err != nil {
+			if v.Error == "" {
+				t.Errorf("%s: unexpected error %q", v.Name, err.Error())
+			} else if v.Error != err.Error() {
+				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
+			}
+			continue
+		}
 
 		if v.Delimiter != 0 {
 			r.Delimiter = v.Delimiter
@@ -169,6 +193,10 @@ func TestReader_ReadAll(t *testing.T) {
 			} else if v.Error != err.Error() {
 				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
 			}
+			continue
+		}
+		if 0 < len(v.Error) {
+			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
 			continue
 		}
 
@@ -195,7 +223,8 @@ func TestReader_ReadHeader(t *testing.T) {
 		{text.RawText("d"), text.RawText("e"), text.RawText("f")},
 	}
 
-	r := NewReader(strings.NewReader(input), text.UTF8)
+	r, _ := NewReader(strings.NewReader(input), text.UTF8)
+
 	header, err := r.ReadHeader()
 	if err != nil {
 		t.Errorf("unexpected error %q", err.Error())
@@ -215,7 +244,7 @@ func TestReader_ReadHeader(t *testing.T) {
 	input = "h1,\"h2 ,h3\na,b,c\nd,e,f"
 	expectErr := "line 3, column 6: extraneous \" in field"
 
-	r = NewReader(strings.NewReader(input), text.UTF8)
+	r, _ = NewReader(strings.NewReader(input), text.UTF8)
 	_, err = r.ReadHeader()
 	if err == nil {
 		t.Errorf("no error, want error %q", expectErr)
@@ -229,7 +258,7 @@ var readerReadAllBenchmarkText = strings.Repeat("aaaaaa,\"bbbbbb\",cccccc\n", 10
 func BenchmarkReader_ReadAll(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		r := strings.NewReader(readerReadAllBenchmarkText)
-		reader := NewReader(r, text.UTF8)
+		reader, _ := NewReader(r, text.UTF8)
 		reader.Delimiter = ','
 		reader.WithoutNull = false
 		reader.ReadAll()

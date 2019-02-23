@@ -10,13 +10,15 @@ import (
 type Encoding string
 
 const (
-	UTF8 Encoding = "UTF8"
-	SJIS Encoding = "SJIS"
+	UTF8  Encoding = "UTF8"
+	UTF8M Encoding = "UTF8M"
+	SJIS  Encoding = "SJIS"
 )
 
 var EncodingLiteral = map[Encoding]string{
-	UTF8: "UTF8",
-	SJIS: "SJIS",
+	UTF8:  "UTF8",
+	UTF8M: "UTF8M",
+	SJIS:  "SJIS",
 }
 
 func (e Encoding) String() string {
@@ -61,6 +63,8 @@ func ParseEncoding(s string) (Encoding, error) {
 	switch strings.ToUpper(s) {
 	case "UTF8":
 		encoding = UTF8
+	case "UTF8M":
+		encoding = UTF8M
 	case "SJIS":
 		encoding = SJIS
 	default:

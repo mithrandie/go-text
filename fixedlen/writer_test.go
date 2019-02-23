@@ -108,6 +108,38 @@ var writerWriteTests = []struct {
 			"ghi  jkl       mno  ",
 	},
 	{
+		Name: "Encode to UTF8M",
+		Records: [][]Field{
+			{
+				{Contents: "c1"},
+				{Contents: "c2"},
+				{Contents: "c3"},
+			},
+			{
+				{Contents: "-1", Alignment: text.RightAligned},
+				{Contents: "", Alignment: text.Centering},
+				{Contents: "false", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "2.0123", Alignment: text.RightAligned},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
+				{Contents: "abcdef", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "true", Alignment: text.LeftAligned},
+				{Contents: " abc", Alignment: text.LeftAligned},
+			},
+		},
+		DelimiterPositions: []int{10, 42, 50},
+		LineBreak:          text.LF,
+		Encoding:           text.UTF8M,
+		Expect: string(text.UTF8BOM()) +
+			"c1        c2                              c3      \n" +
+			"        -1                                false   \n" +
+			"    2.01232016-02-01T16:00:00.123456-07:00abcdef  \n" +
+			"true       abc                                    ",
+	},
+	{
 		Name: "Fixed-Length Encode with Empty Field",
 		Records: [][]Field{
 			{

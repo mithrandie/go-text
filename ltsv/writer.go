@@ -27,10 +27,15 @@ func NewWriter(w io.Writer, header []string, lineBreak text.LineBreak, enc text.
 		}
 	}
 
+	bw := bufio.NewWriter(text.GetTransformWriter(w, enc))
+	if enc == text.UTF8M {
+		bw.Write(text.UTF8BOM())
+	}
+
 	return &Writer{
 		header:    header,
 		lineBreak: lineBreak.Value(),
-		writer:    bufio.NewWriter(text.GetTransformWriter(w, enc)),
+		writer:    bw,
 	}, nil
 }
 
