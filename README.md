@@ -57,9 +57,9 @@ var jsonConfig = `
 func main() {
 	message := "message"
 	
-	// Use JSON Configuration
-    conf := &Config{}
-    if err := json.Unmarshal([]byte(jsonConfig), conf); err != nil {
+	// Use JSON Configuration 
+	conf := &Config{} 
+	if err := json.Unmarshal([]byte(jsonConfig), conf); err != nil {
 		panic(err)
 	}
 	
