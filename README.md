@@ -18,6 +18,7 @@ Supports ANSI escape sequences.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	
 	"github.com/mithrandie/go-text/color"
@@ -28,9 +29,47 @@ const (
 	YellowColor = "yellow"
 )
 
+type Config struct {
+	Palette              color.PaletteConfig `json:"palette"`
+}
+
+var jsonConfig = `
+{
+  "palette": {
+    "effectors": {
+      "color1": {
+        "effects": [
+          "Bold"
+        ],
+        "foreground": "Blue",
+        "background": null
+      },
+      "color2": {
+        "effects": [],
+        "foreground": "Magenta",
+        "background": null
+      }
+    }
+  }
+}
+`
+
 func main() {
 	message := "message"
 	
+	// Use JSON Configuration
+    conf := &Config{}
+    if err := json.Unmarshal([]byte(jsonConfig), conf); err != nil {
+		panic(err)
+	}
+	
+	palette, err := color.GeneratePalette(conf.Palette)
+	if err != nil {
+		panic(err)
+	}
+	
+	fmt.Println(palette.Render("color1", message))
+
 	// Use Effector
 	e := color.NewEffector()
 	e.SetFGColor(color.Red)
@@ -44,7 +83,6 @@ func main() {
 	yellow := color.NewEffector()
 	yellow.SetFGColor(color.Blue)
 	
-	palette := color.NewPalette()
 	palette.SetEffector(BlueColor, blue)
 	palette.SetEffector(YellowColor, yellow)
 	
@@ -73,7 +111,7 @@ func main() {
 	}
 	defer fp.Close()
 	
-	r := csv.NewReader(fp, text.UTF8)
+	r, _ := csv.NewReader(fp, text.UTF8)
 	r.Delimiter = ','
 	r.WithoutNull = true
 	recordSet, err := r.ReadAll()
@@ -125,7 +163,7 @@ func main() {
 	}
 	defer fp.Close()
 	
-	r := fixedlen.NewReader(fp, []int{5, 10, 45, 60}, text.UTF8)
+	r, _ := fixedlen.NewReader(fp, []int{5, 10, 45, 60}, text.UTF8)
 	r.WithoutNull = true
 	recordSet, err := r.ReadAll()
 	if err != nil {
@@ -210,7 +248,7 @@ func main() {
 	}
 	defer fp.Close()
 	
-	r := ltsv.NewReader(fp, text.UTF8)
+	r, _ := ltsv.NewReader(fp, text.UTF8)
 	r.WithoutNull = true
 	recordSet, err := r.ReadAll()
 	if err != nil {
