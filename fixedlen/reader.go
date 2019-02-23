@@ -14,6 +14,7 @@ type Reader struct {
 	DelimiterPositions DelimiterPositions
 	WithoutNull        bool
 	Encoding           text.Encoding
+	SingleLine         bool
 
 	reader *bufio.Reader
 	buf    bytes.Buffer
@@ -134,7 +135,7 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 		}
 	}
 
-	if !lineEnd {
+	if !r.SingleLine && !lineEnd {
 		for {
 			c, _, err := r.reader.ReadRune()
 			if err != nil {

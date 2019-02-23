@@ -13,6 +13,7 @@ import (
 type Writer struct {
 	InsertSpace bool
 	PadChar     byte
+	SingleLine  bool
 
 	delimiterPositions DelimiterPositions
 	encoding           text.Encoding
@@ -38,7 +39,7 @@ func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak tex
 }
 
 func (e *Writer) Write(record []Field) error {
-	if e.appended {
+	if !e.SingleLine && e.appended {
 		if _, err := e.writer.WriteString(e.lineBreak); err != nil {
 			return err
 		}

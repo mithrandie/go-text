@@ -14,6 +14,7 @@ var writerWriteTests = []struct {
 	LineBreak          text.LineBreak
 	Encoding           text.Encoding
 	InsertSpace        bool
+	SingleLine         bool
 	Expect             string
 	Error              string
 }{
@@ -242,6 +243,35 @@ var writerWriteTests = []struct {
 			"abcabc def def\n" +
 			"ghi    jkl mno",
 	},
+	{
+		Name: "Fixed-Length Encode SingleLine",
+		Records: [][]Field{
+			{
+				{Contents: "c1"},
+				{Contents: "c2"},
+				{Contents: "c3"},
+			},
+			{
+				{Contents: "abcabc", Alignment: text.LeftAligned},
+				{Contents: "def", Alignment: text.LeftAligned},
+				{Contents: "def", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "ghi", Alignment: text.LeftAligned},
+				{Contents: "jkl", Alignment: text.LeftAligned},
+				{Contents: "mno", Alignment: text.LeftAligned},
+			},
+		},
+		DelimiterPositions: []int{6, 9, 12},
+		LineBreak:          text.LF,
+		Encoding:           text.UTF8,
+		InsertSpace:        false,
+		SingleLine:         true,
+		Expect: "" +
+			"c1    c2 c3 " +
+			"abcabcdefdef" +
+			"ghi   jklmno",
+	},
 }
 
 func TestWriter_Write(t *testing.T) {
@@ -252,6 +282,8 @@ func TestWriter_Write(t *testing.T) {
 
 		e := NewWriter(w, v.DelimiterPositions, v.LineBreak, v.Encoding)
 		e.InsertSpace = v.InsertSpace
+		e.SingleLine = v.SingleLine
+
 		for _, r := range v.Records {
 			err := e.Write(r)
 			if err != nil {

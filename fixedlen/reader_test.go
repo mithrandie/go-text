@@ -70,6 +70,7 @@ var readerReadAllTests = []struct {
 	Input              string
 	DelimiterPositions []int
 	WithoutNull        bool
+	SingleLine         bool
 	Encoding           text.Encoding
 	Output             [][]text.RawText
 	ExpectLineBreak    text.LineBreak
@@ -274,6 +275,19 @@ var readerReadAllTests = []struct {
 		Encoding:           text.UTF8M,
 		Error:              "byte order mark for UTF-8 does not exist",
 	},
+	{
+		Name:               "ReadAll Without LineBreak",
+		Input:              "aaabbbbcccccdddeeeefffff",
+		DelimiterPositions: []int{3, 7, 12},
+		WithoutNull:        false,
+		SingleLine:         true,
+		Encoding:           text.UTF8,
+		Output: [][]text.RawText{
+			{text.RawText("aaa"), text.RawText("bbbb"), text.RawText("ccccc")},
+			{text.RawText("ddd"), text.RawText("eeee"), text.RawText("fffff")},
+		},
+		ExpectLineBreak: "",
+	},
 }
 
 func TestFixedLengthReader_ReadAll(t *testing.T) {
@@ -289,6 +303,7 @@ func TestFixedLengthReader_ReadAll(t *testing.T) {
 		}
 
 		r.WithoutNull = v.WithoutNull
+		r.SingleLine = v.SingleLine
 
 		records, err := r.ReadAll()
 
