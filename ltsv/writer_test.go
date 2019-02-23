@@ -65,6 +65,27 @@ var writerWriteTests = []struct {
 			"c1:2.0123\tc2:2016-02-01T16:00:00.123456-07:00\tc3:abc,de",
 	},
 	{
+		Name:   "Encode to UTF8M",
+		Header: []string{"c1", "c2", "c3"},
+		Records: [][]string{
+			{
+				"-1",
+				"a",
+				"",
+			},
+			{
+				"2.0123",
+				"2016-02-01T16:00:00.123456-07:00",
+				"abc,de",
+			},
+		},
+		LineBreak: text.LF,
+		Encoding:  text.UTF8M,
+		Expect: string(text.UTF8BOM()) +
+			"c1:-1\tc2:a\tc3:\n" +
+			"c1:2.0123\tc2:2016-02-01T16:00:00.123456-07:00\tc3:abc,de",
+	},
+	{
 		Name:   "Field Length Error",
 		Header: []string{"c1", "c2", "c3", "c4"},
 		Records: [][]string{

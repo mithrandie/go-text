@@ -99,6 +99,32 @@ var writerWriteTests = []struct {
 			"-1,,true\n" +
 			"2.0123,\"2016-02-01T16:00:00.123456-07:00\"," + string([]byte{0x93, 0xfa, 0x96, 0x7b, 0x8c, 0xea}),
 	},
+	{
+		Name: "Encode to UTF8M",
+		Records: [][]Field{
+			{
+				{Contents: "c1", Quote: true},
+				{Contents: "c2\nsecond line", Quote: true},
+				{Contents: "c3", Quote: true},
+			},
+			{
+				{Contents: "-1", Quote: false},
+				{Contents: "", Quote: false},
+				{Contents: "true", Quote: false},
+			},
+			{
+				{Contents: "2.0123", Quote: false},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Quote: true},
+				{Contents: "abc,de\"f", Quote: false},
+			},
+		},
+		Delimiter: ',',
+		LineBreak: text.LF,
+		Encoding:  text.UTF8M,
+		Expect: string(text.UTF8BOM()) + "\"c1\",\"c2\nsecond line\",\"c3\"\n" +
+			"-1,,true\n" +
+			"2.0123,\"2016-02-01T16:00:00.123456-07:00\",\"abc,de\"\"f\"",
+	},
 }
 
 func TestWriter_Write(t *testing.T) {

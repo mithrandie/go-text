@@ -30,17 +30,22 @@ type Reader struct {
 	EnclosedAll       bool
 }
 
-func NewReader(r io.Reader, enc text.Encoding) *Reader {
+func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
+	reader, err := text.SkipBOM(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Reader{
 		Delimiter:       ',',
 		WithoutNull:     false,
 		Encoding:        enc,
-		reader:          bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:          bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:            1,
 		column:          0,
 		FieldsPerRecord: 0,
 		EnclosedAll:     true,
-	}
+	}, nil
 }
 
 func (r *Reader) newError(s string) error {

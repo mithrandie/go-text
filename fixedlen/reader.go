@@ -14,6 +14,7 @@ type Reader struct {
 	DelimiterPositions DelimiterPositions
 	WithoutNull        bool
 	Encoding           text.Encoding
+	SingleLine         bool
 
 	reader *bufio.Reader
 	buf    bytes.Buffer
@@ -21,13 +22,18 @@ type Reader struct {
 	DetectedLineBreak text.LineBreak
 }
 
-func NewReader(r io.Reader, positions []int, enc text.Encoding) *Reader {
+func NewReader(r io.Reader, positions []int, enc text.Encoding) (*Reader, error) {
+	reader, err := text.SkipBOM(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Reader{
 		DelimiterPositions: positions,
 		WithoutNull:        false,
 		Encoding:           enc,
-		reader:             bufio.NewReader(text.GetTransformDecoder(r, enc)),
-	}
+		reader:             bufio.NewReader(text.GetTransformDecoder(reader, enc)),
+	}, nil
 }
 
 func (r *Reader) ReadHeader() ([]string, error) {
@@ -129,7 +135,7 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 		}
 	}
 
-	if !lineEnd {
+	if !r.SingleLine && !lineEnd {
 		for {
 			c, _, err := r.reader.ReadRune()
 			if err != nil {

@@ -37,7 +37,8 @@ var readerReadHeaderTests = []struct {
 
 func TestFixedLengthReader_ReadHeader(t *testing.T) {
 	for _, v := range readerReadHeaderTests {
-		r := NewReader(strings.NewReader(v.Input), v.DelimiterPositions, v.Encoding)
+		r, _ := NewReader(strings.NewReader(v.Input), v.DelimiterPositions, v.Encoding)
+
 		r.WithoutNull = v.WithoutNull
 
 		header, err := r.ReadHeader()
@@ -50,6 +51,11 @@ func TestFixedLengthReader_ReadHeader(t *testing.T) {
 			}
 			continue
 		}
+		if 0 < len(v.Error) {
+			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
+			continue
+		}
+
 		if 0 < len(v.Error) {
 			t.Errorf("%s: no error, want error %q", v.Name, v.Error)
 		}
@@ -64,6 +70,7 @@ var readerReadAllTests = []struct {
 	Input              string
 	DelimiterPositions []int
 	WithoutNull        bool
+	SingleLine         bool
 	Encoding           text.Encoding
 	Output             [][]text.RawText
 	ExpectLineBreak    text.LineBreak
@@ -248,12 +255,55 @@ var readerReadAllTests = []struct {
 		Encoding:           text.SJIS,
 		Error:              "cannot delimit lines in a byte array of a character",
 	},
+	{
+		Name:               "UTF-8 with BOM",
+		Input:              string(text.UTF8BOM()) + "abcdefghi\nklmnopqurst",
+		DelimiterPositions: []int{2, 5, 11},
+		WithoutNull:        false,
+		Encoding:           text.UTF8M,
+		Output: [][]text.RawText{
+			{text.RawText("ab"), text.RawText("cde"), text.RawText("fghi")},
+			{text.RawText("kl"), text.RawText("mno"), text.RawText("pqurst")},
+		},
+		ExpectLineBreak: text.LF,
+	},
+	{
+		Name:               "BOM does not exist error",
+		Input:              "abcdefghi\nklmnopqurst",
+		DelimiterPositions: []int{2, 5, 11},
+		WithoutNull:        false,
+		Encoding:           text.UTF8M,
+		Error:              "byte order mark for UTF-8 does not exist",
+	},
+	{
+		Name:               "ReadAll Without LineBreak",
+		Input:              "aaabbbbcccccdddeeeefffff",
+		DelimiterPositions: []int{3, 7, 12},
+		WithoutNull:        false,
+		SingleLine:         true,
+		Encoding:           text.UTF8,
+		Output: [][]text.RawText{
+			{text.RawText("aaa"), text.RawText("bbbb"), text.RawText("ccccc")},
+			{text.RawText("ddd"), text.RawText("eeee"), text.RawText("fffff")},
+		},
+		ExpectLineBreak: "",
+	},
 }
 
 func TestFixedLengthReader_ReadAll(t *testing.T) {
 	for _, v := range readerReadAllTests {
-		r := NewReader(strings.NewReader(v.Input), v.DelimiterPositions, v.Encoding)
+		r, err := NewReader(strings.NewReader(v.Input), v.DelimiterPositions, v.Encoding)
+		if err != nil {
+			if v.Error == "" {
+				t.Errorf("%s: unexpected error %q", v.Name, err.Error())
+			} else if v.Error != err.Error() {
+				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
+			}
+			continue
+		}
+
 		r.WithoutNull = v.WithoutNull
+		r.SingleLine = v.SingleLine
 
 		records, err := r.ReadAll()
 

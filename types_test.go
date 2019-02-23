@@ -15,6 +15,10 @@ var parseEncodingTests = []struct {
 		Expect: UTF8,
 	},
 	{
+		Input:  "utf8m",
+		Expect: UTF8M,
+	},
+	{
 		Input:  "sjis",
 		Expect: SJIS,
 	},

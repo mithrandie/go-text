@@ -13,6 +13,7 @@ import (
 type Writer struct {
 	InsertSpace bool
 	PadChar     byte
+	SingleLine  bool
 
 	delimiterPositions DelimiterPositions
 	encoding           text.Encoding
@@ -22,18 +23,23 @@ type Writer struct {
 }
 
 func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak text.LineBreak, enc text.Encoding) *Writer {
+	bw := bufio.NewWriter(text.GetTransformWriter(w, enc))
+	if enc == text.UTF8M {
+		bw.Write(text.UTF8BOM())
+	}
+
 	return &Writer{
 		InsertSpace:        false,
 		PadChar:            ' ',
 		delimiterPositions: delimiterPositions,
 		encoding:           enc,
 		lineBreak:          lineBreak.Value(),
-		writer:             bufio.NewWriter(text.GetTransformWriter(w, enc)),
+		writer:             bw,
 	}
 }
 
 func (e *Writer) Write(record []Field) error {
-	if e.appended {
+	if !e.SingleLine && e.appended {
 		if _, err := e.writer.WriteString(e.lineBreak); err != nil {
 			return err
 		}
