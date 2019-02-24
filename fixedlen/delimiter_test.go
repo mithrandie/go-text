@@ -293,11 +293,40 @@ var delimiterDelimitTests = []struct {
 		Encoding: text.UTF8,
 		Expect:   []int{7, 11},
 	},
+	{
+		Input: string(text.UTF8BOM()) +
+			"aaa bbb ccc ddd\n" +
+			"\n" +
+			"     \n" +
+			"aaa bbb ccc ddd\n",
+		NoHeader: true,
+		Encoding: text.UTF8M,
+		Expect:   []int{3, 7, 11, 15},
+	},
+	{
+		Input: "" +
+			"aaa bbb ccc ddd\n" +
+			"\n" +
+			"     \n" +
+			"aaa bbb ccc ddd\n",
+		NoHeader: true,
+		Encoding: text.UTF8M,
+		Error:    "byte order mark for UTF-8 does not exist",
+	},
 }
 
 func TestDelimiter_Delimit(t *testing.T) {
 	for _, v := range delimiterDelimitTests {
-		d := NewDelimiter(strings.NewReader(v.Input), v.Encoding)
+		d, err := NewDelimiter(strings.NewReader(v.Input), v.Encoding)
+		if err != nil {
+			if v.Error == "" {
+				t.Errorf("unexpected error %q for %q", err.Error(), v.Input)
+			} else if v.Error != err.Error() {
+				t.Errorf("error %q, want error %q for %q", err.Error(), v.Error, v.Input)
+			}
+			continue
+		}
+
 		d.NoHeader = v.NoHeader
 		d.Encoding = v.Encoding
 

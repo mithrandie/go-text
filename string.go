@@ -62,7 +62,7 @@ func sjisRuneByteSize(r rune) int {
 func ByteSize(s string, encoding Encoding) int {
 	size := 0
 	switch encoding {
-	case UTF8:
+	case UTF8, UTF8M:
 		size = len(s)
 	default:
 		for _, c := range s {

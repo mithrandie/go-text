@@ -146,12 +146,17 @@ type Delimiter struct {
 	positions   DelimiterPositions
 }
 
-func NewDelimiter(r io.Reader, enc text.Encoding) *Delimiter {
+func NewDelimiter(r io.Reader, enc text.Encoding) (*Delimiter, error) {
+	reader, err := text.SkipBOM(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Delimiter{
 		Encoding:        enc,
-		reader:          bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:          bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		spacesPerRecord: 5,
-	}
+	}, nil
 }
 
 func (d *Delimiter) Delimit() ([]int, error) {
