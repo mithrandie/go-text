@@ -121,7 +121,7 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 				e.lineBreak +
 				indent + string(EndArray)
 		}
-	case Number:
+	case Number, Float, Integer:
 		encoded = e.effect(NumberEffect, structure.Encode())
 	case String:
 		str := structure.(String).Raw()

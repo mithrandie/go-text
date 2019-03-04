@@ -20,6 +20,7 @@ import "strconv"
 %type<structure>      value
 
 %token<token> NUMBER STRING BOOLEAN NULL
+%token<token> FLOAT INTEGER
 
 %%
 
@@ -93,6 +94,16 @@ value
         f, _ := strconv.ParseFloat($1.Literal, 64)
         $$ = Number(f)
     }
+    | FLOAT
+    {
+        f, _ := strconv.ParseFloat($1.Literal, 64)
+        $$ = Float(f)
+    }
+    | INTEGER
+    {
+        i, _ := strconv.ParseInt($1.Literal, 10, 64)
+        $$ = Integer(i)
+    }
     | BOOLEAN
     {
         b, _ := strconv.ParseBool($1.Literal)
@@ -105,9 +116,9 @@ value
 
 %%
 
-func ParseJson(src string) (Structure, EscapeType, error) {
+func ParseJson(src string, useInteger bool) (Structure, EscapeType, error) {
 	l := new(Lexer)
-	l.Init(src)
+	l.Init(src, useInteger)
 	yyParse(l)
 	return l.structure, l.EscapeType(), l.err
 }

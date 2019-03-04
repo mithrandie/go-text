@@ -111,6 +111,26 @@ func (n Number) Raw() float64 {
 	return float64(n)
 }
 
+type Float float64
+
+func (n Float) Encode() string {
+	return strconv.FormatFloat(float64(n), 'f', -1, 64)
+}
+
+func (n Float) Raw() float64 {
+	return float64(n)
+}
+
+type Integer int64
+
+func (n Integer) Encode() string {
+	return strconv.FormatInt(int64(n), 10)
+}
+
+func (n Integer) Raw() int64 {
+	return int64(n)
+}
+
 type String string
 
 func (s String) Encode() string {
