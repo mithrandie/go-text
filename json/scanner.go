@@ -108,7 +108,7 @@ func (s *Scanner) Scan() (Token, error) {
 	column := s.column
 
 	switch {
-	case s.isPositiveDecimal(ch) || ch == '-':
+	case s.isDecimal(ch) || ch == '-':
 		s.scanNumber(ch)
 		literal = s.literal()
 		if s.err == nil {

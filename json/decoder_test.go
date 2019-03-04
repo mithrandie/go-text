@@ -76,7 +76,7 @@ var decoderDecodeTests = []struct {
 		EscapeType: HexDigits,
 	},
 	{
-		Input: "{\"key\":{\"child\":\"value\"}}",
+		Input: "{\"key\":{\"child\":\"value\", \"zero\":0, \"frac\":0.01}}",
 		Expect: Object{
 			Members: []ObjectMember{
 				{
@@ -86,6 +86,14 @@ var decoderDecodeTests = []struct {
 							{
 								Key:   "child",
 								Value: String("value"),
+							},
+							{
+								Key:   "zero",
+								Value: Number(0),
+							},
+							{
+								Key:   "frac",
+								Value: Number(0.01),
 							},
 						},
 					},
@@ -136,6 +144,10 @@ var decoderDecodeTests = []struct {
 		Error: "line 1, column 17: unexpected token \",\"",
 	},
 	{
+		Input: "[1, \"abc\", invalid]",
+		Error: "line 1, column 12: unexpected token \"invalid\"",
+	},
+	{
 		Input: "1",
 		Error: "line 1, column 1: unexpected token \"1\"",
 	},
@@ -166,6 +178,10 @@ var decoderDecodeTests = []struct {
 	{
 		Input: "[1, -1.1e+a]",
 		Error: "line 1, column 12: invalid number",
+	},
+	{
+		Input: "[1, 01]",
+		Error: "line 1, column 6: unexpected token \"1\"",
 	},
 }
 
