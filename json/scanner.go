@@ -10,6 +10,8 @@ import (
 const EOF = -1
 
 type Scanner struct {
+	UseInteger bool
+
 	src    []rune
 	srcPos int
 	offset int
@@ -23,7 +25,9 @@ type Scanner struct {
 	err error
 }
 
-func (s *Scanner) Init(src string) *Scanner {
+func (s *Scanner) Init(src string, useInteger bool) *Scanner {
+	s.UseInteger = useInteger
+
 	s.src = []rune(src)
 	s.srcPos = 0
 	s.offset = 0
@@ -109,7 +113,7 @@ func (s *Scanner) Scan() (Token, error) {
 
 	switch {
 	case s.isDecimal(ch) || ch == '-':
-		s.scanNumber(ch)
+		isInteger := s.scanNumber(ch)
 		literal = s.literal()
 		if s.err == nil {
 			_, err := strconv.ParseFloat(literal, 64)
@@ -117,7 +121,15 @@ func (s *Scanner) Scan() (Token, error) {
 				s.err = errors.New(fmt.Sprintf("could not convert %q into float64", literal))
 			}
 		}
-		token = NUMBER
+		if s.UseInteger {
+			if isInteger {
+				token = INTEGER
+			} else {
+				token = FLOAT
+			}
+		} else {
+			token = NUMBER
+		}
 	case s.isLiteral(ch):
 		s.scanLiteral()
 		literal = s.literal()
@@ -203,7 +215,7 @@ func (s *Scanner) scanDecimal() {
 	}
 }
 
-func (s *Scanner) scanNumber(ch rune) {
+func (s *Scanner) scanNumber(ch rune) (isInteger bool) {
 	if ch == '-' {
 		ch = s.next()
 	}
@@ -213,11 +225,14 @@ func (s *Scanner) scanNumber(ch rune) {
 		return
 	}
 
+	isInteger = true
 	if s.isPositiveDecimal(ch) {
 		s.scanDecimal()
 	}
 
 	if s.peek() == '.' {
+		isInteger = false
+
 		s.next()
 		if !s.isDecimal(s.peek()) {
 			s.next()
@@ -228,6 +243,8 @@ func (s *Scanner) scanNumber(ch rune) {
 	}
 
 	if s.peek() == 'e' || s.peek() == 'E' {
+		isInteger = false
+
 		s.next()
 		if s.peek() == '+' || s.peek() == '-' {
 			s.next()

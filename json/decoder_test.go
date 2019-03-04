@@ -7,6 +7,7 @@ import (
 
 var decoderDecodeTests = []struct {
 	Input      string
+	UseInteger bool
 	Expect     Structure
 	EscapeType EscapeType
 	Error      string
@@ -140,6 +141,14 @@ var decoderDecodeTests = []struct {
 		},
 	},
 	{
+		Input:      "[1, -2.345]",
+		UseInteger: true,
+		Expect: Array{
+			Integer(1),
+			Float(-2.345),
+		},
+	},
+	{
 		Input: "[1, \"abc\", true], []",
 		Error: "line 1, column 17: unexpected token \",\"",
 	},
@@ -188,6 +197,7 @@ var decoderDecodeTests = []struct {
 func TestDecoder_Decode(t *testing.T) {
 	for _, v := range decoderDecodeTests {
 		d := NewDecoder()
+		d.UseInteger = v.UseInteger
 
 		value, et, err := d.Decode(v.Input)
 		if err != nil {

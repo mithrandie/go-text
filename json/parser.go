@@ -23,6 +23,8 @@ const NUMBER = 57346
 const STRING = 57347
 const BOOLEAN = 57348
 const NULL = 57349
+const FLOAT = 57350
+const INTEGER = 57351
 
 var yyToknames = [...]string{
 	"$end",
@@ -32,6 +34,8 @@ var yyToknames = [...]string{
 	"STRING",
 	"BOOLEAN",
 	"NULL",
+	"FLOAT",
+	"INTEGER",
 	"'{'",
 	"'}'",
 	"'['",
@@ -45,11 +49,11 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:106
+//line parser.y:117
 
-func ParseJson(src string) (Structure, EscapeType, error) {
+func ParseJson(src string, useInteger bool) (Structure, EscapeType, error) {
 	l := new(Lexer)
-	l.Init(src)
+	l.Init(src, useInteger)
 	yyParse(l)
 	return l.structure, l.EscapeType(), l.err
 }
@@ -63,45 +67,45 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 24
+const yyLast = 29
 
 var yyAct = [...]int{
 
-	8, 9, 19, 16, 5, 12, 11, 13, 14, 3,
-	17, 4, 3, 18, 4, 15, 7, 10, 2, 21,
-	22, 20, 6, 1,
+	8, 9, 12, 11, 15, 16, 13, 14, 3, 5,
+	4, 21, 18, 19, 20, 3, 7, 4, 17, 10,
+	2, 23, 24, 6, 1, 0, 0, 0, 22,
 }
 var yyPact = [...]int{
 
-	4, -1000, -1000, 11, 1, 6, -10, -2, 2, -11,
-	-1000, -1000, -1000, -1000, -1000, -1000, 11, 1, -1000, 1,
-	-1000, -1000, -1000,
+	5, -1000, -1000, 11, -2, 7, -3, -1, 1, -4,
+	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, 11, -2,
+	-1000, -2, -1000, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 23, 17, 22, 4, 0, 1,
+	0, 24, 19, 23, 9, 0, 1,
 }
 var yyR1 = [...]int{
 
 	0, 1, 1, 2, 2, 3, 4, 4, 4, 5,
-	5, 5, 6, 6, 6, 6, 6,
+	5, 5, 6, 6, 6, 6, 6, 6, 6,
 }
 var yyR2 = [...]int{
 
 	0, 0, 1, 3, 3, 3, 0, 1, 3, 0,
-	1, 3, 1, 1, 1, 1, 1,
+	1, 3, 1, 1, 1, 1, 1, 1, 1,
 }
 var yyChk = [...]int{
 
-	-1000, -1, -2, 8, 10, -4, -3, 5, -5, -6,
-	-2, 5, 4, 6, 7, 9, 13, 12, 11, 13,
-	-4, -6, -5,
+	-1000, -1, -2, 10, 12, -4, -3, 5, -5, -6,
+	-2, 5, 4, 8, 9, 6, 7, 11, 15, 14,
+	13, 15, -4, -6, -5,
 }
 var yyDef = [...]int{
 
 	1, -2, 2, 6, 9, 0, 7, 0, 0, 10,
-	12, 13, 14, 15, 16, 3, 6, 0, 4, 9,
-	8, 5, 11,
+	12, 13, 14, 15, 16, 17, 18, 3, 6, 0,
+	4, 9, 8, 5, 11,
 }
 var yyTok1 = [...]int{
 
@@ -109,19 +113,19 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 13, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 12, 3,
+	3, 3, 3, 3, 15, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 14, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 10, 3, 11, 3, 3, 3, 3, 3, 3,
+	3, 12, 3, 13, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 8, 3, 9,
+	3, 3, 3, 10, 3, 11,
 }
 var yyTok2 = [...]int{
 
-	2, 3, 4, 5, 6, 7,
+	2, 3, 4, 5, 6, 7, 8, 9,
 }
 var yyTok3 = [...]int{
 	0,
@@ -466,101 +470,115 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line parser.y:28
+		//line parser.y:29
 		{
 			yyVAL.structure = nil
 			yylex.(*Lexer).structure = yyVAL.structure
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:33
+		//line parser.y:34
 		{
 			yyVAL.structure = yyDollar[1].structure
 			yylex.(*Lexer).structure = yyVAL.structure
 		}
 	case 3:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:40
+		//line parser.y:41
 		{
 			yyVAL.structure = Object{Members: yyDollar[2].object_members}
 		}
 	case 4:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:44
+		//line parser.y:45
 		{
 			yyVAL.structure = Array(yyDollar[2].structures)
 		}
 	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:50
+		//line parser.y:51
 		{
 			yyVAL.object_member = ObjectMember{Key: yyDollar[1].token.Literal, Value: yyDollar[3].structure}
 		}
 	case 6:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line parser.y:56
+		//line parser.y:57
 		{
 			yyVAL.object_members = nil
 		}
 	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:60
+		//line parser.y:61
 		{
 			yyVAL.object_members = []ObjectMember{yyDollar[1].object_member}
 		}
 	case 8:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:64
+		//line parser.y:65
 		{
 			yyVAL.object_members = append([]ObjectMember{yyDollar[1].object_member}, yyDollar[3].object_members...)
 		}
 	case 9:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line parser.y:70
+		//line parser.y:71
 		{
 			yyVAL.structures = []Structure{}
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:74
+		//line parser.y:75
 		{
 			yyVAL.structures = []Structure{yyDollar[1].structure}
 		}
 	case 11:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:78
+		//line parser.y:79
 		{
 			yyVAL.structures = append([]Structure{yyDollar[1].structure}, yyDollar[3].structures...)
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:84
+		//line parser.y:85
 		{
 			yyVAL.structure = yyDollar[1].structure
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:88
+		//line parser.y:89
 		{
 			yyVAL.structure = String(yyDollar[1].token.Literal)
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:92
+		//line parser.y:93
 		{
 			f, _ := strconv.ParseFloat(yyDollar[1].token.Literal, 64)
 			yyVAL.structure = Number(f)
 		}
 	case 15:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:97
+		//line parser.y:98
+		{
+			f, _ := strconv.ParseFloat(yyDollar[1].token.Literal, 64)
+			yyVAL.structure = Float(f)
+		}
+	case 16:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:103
+		{
+			i, _ := strconv.ParseInt(yyDollar[1].token.Literal, 10, 64)
+			yyVAL.structure = Integer(i)
+		}
+	case 17:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:108
 		{
 			b, _ := strconv.ParseBool(yyDollar[1].token.Literal)
 			yyVAL.structure = Boolean(b)
 		}
-	case 16:
+	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:102
+		//line parser.y:113
 		{
 			yyVAL.structure = Null{}
 		}

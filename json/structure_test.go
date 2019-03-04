@@ -43,6 +43,8 @@ func TestObject(t *testing.T) {
 		Number(1),
 		Number(2),
 		Number(3),
+		Float(4.56),
+		Integer(789),
 	}
 	obj.Add("ar", ar)
 	obj.Add("null", Null{})
@@ -51,7 +53,7 @@ func TestObject(t *testing.T) {
 	encoded := obj.Encode()
 	expectJson := "{" +
 		"\"str\":\"updated\"," +
-		"\"ar\":[1,2,3]," +
+		"\"ar\":[1,2,3,4.56,789]," +
 		"\"null\":null," +
 		"\"bool\":false" +
 		"}"
