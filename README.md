@@ -109,7 +109,11 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer fp.Close()
+	defer func() {
+		if err = fp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 	
 	r, _ := csv.NewReader(fp, text.UTF8)
 	r.Delimiter = ','
@@ -125,9 +129,16 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer wfp.Close()
+	defer func() {
+		if err = wfp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 	
-	w := csv.NewWriter(wfp, lineBreak, text.SJIS)
+	w, err := csv.NewWriter(wfp, lineBreak, text.SJIS)
+	if err != nil {
+		panic(err.Error())
+	}
 	w.Delimiter = ','
 	
 	for _, record := range recordSet {
@@ -139,7 +150,9 @@ func main() {
 			panic("write error")
 		}
 	}
-	w.Flush()
+	if err = w.Flush(); err != nil {
+		panic(err)
+	}
 }
 ```
 
@@ -161,7 +174,11 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer fp.Close()
+	defer func() {
+		if err = fp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 	
 	r, _ := fixedlen.NewReader(fp, []int{5, 10, 45, 60}, text.UTF8)
 	r.WithoutNull = true
@@ -176,18 +193,29 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer wfp.Close()
+	defer func() {
+		if err = wfp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 
-	w := fixedlen.NewWriter(wfp, []int{5, 10, 45, 60}, lineBreak, text.SJIS)
+	w, err := fixedlen.NewWriter(wfp, []int{5, 10, 45, 60}, lineBreak, text.SJIS)
+	if err != nil {
+		panic(err.Error)
+	}
 	
 	for _, record := range recordSet {
 		r := make([]fixedlen.Field, 0, len(record))
 		for _, field := range record {
 			r = append(r, fixedlen.NewField(string(field), text.NotAligned))
 		}
-		w.Write(r)
+		if err = w.Write(r); err != nil {
+			panic(err.Error())
+		}
 	}
-	w.Flush()
+	if err = w.Flush(); err != nil {
+		panic(err.Error())
+	}
 }
 ```
 
@@ -246,7 +274,11 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer fp.Close()
+	defer func() {
+		if err = fp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 	
 	r, _ := ltsv.NewReader(fp, text.UTF8)
 	r.WithoutNull = true
@@ -262,7 +294,11 @@ func main() {
 	if err != nil {
 		panic("file open error")
 	}
-	defer wfp.Close()
+	defer func() {
+		if err = wfp.Close(); err != nil {
+			panic(err.Error())
+		}
+	}()
 
 	w, err := ltsv.NewWriter(wfp, header, lineBreak, text.UTF8)
 	if err != nil {
@@ -274,9 +310,13 @@ func main() {
 		for _, field := range record {
 			r = append(r, string(field))
 		}
-		w.Write(r)
+		if err = w.Write(r); err != nil {
+			panic(err.Error())
+		}
 	}
-	w.Flush()
+	if err = w.Flush(); err != nil {
+		panic(err.Error())
+	}
 }
 ```
 

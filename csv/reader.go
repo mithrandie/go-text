@@ -185,7 +185,9 @@ Read:
 			if nxtCh == '\n' {
 				lineBreak = text.CRLF
 			} else {
-				r.reader.UnreadRune()
+				if err = r.reader.UnreadRune(); err != nil {
+					return quoted, eol, err
+				}
 				lineBreak = text.CR
 			}
 			ch = '\n'

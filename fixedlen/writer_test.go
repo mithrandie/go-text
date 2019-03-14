@@ -280,7 +280,7 @@ func TestWriter_Write(t *testing.T) {
 
 		w := new(bytes.Buffer)
 
-		e := NewWriter(w, v.DelimiterPositions, v.LineBreak, v.Encoding)
+		e, _ := NewWriter(w, v.DelimiterPositions, v.LineBreak, v.Encoding)
 		e.InsertSpace = v.InsertSpace
 		e.SingleLine = v.SingleLine
 
@@ -297,7 +297,7 @@ func TestWriter_Write(t *testing.T) {
 				}
 			}
 		}
-		e.Flush()
+		_ = e.Flush()
 
 		if !errOccurred && 0 < len(v.Error) {
 			t.Errorf("%s: no error, want error %q", v.Name, v.Error)

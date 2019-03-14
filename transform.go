@@ -18,11 +18,15 @@ func UTF8BOM() []byte {
 }
 
 func DetectEncoding(r io.ReadSeeker) (Encoding, error) {
-	r.Seek(0, io.SeekStart)
+	if _, err := r.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
 
 	lead := make([]byte, 3)
 	n, err := r.Read(lead)
-	r.Seek(0, io.SeekStart)
+	if _, err := r.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
 
 	if err == nil && n == 3 && reflect.DeepEqual(UTF8BOM(), lead) {
 		return UTF8M, nil

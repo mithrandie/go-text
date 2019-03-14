@@ -202,7 +202,9 @@ ParseFieldLoop:
 			if nextCh == '\n' {
 				lineBreak = text.CRLF
 			} else {
-				r.reader.UnreadRune()
+				if err = r.reader.UnreadRune(); err != nil {
+					return eol, err
+				}
 				lineBreak = text.CR
 			}
 			ch = '\n'

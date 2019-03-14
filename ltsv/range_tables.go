@@ -6,23 +6,23 @@ import (
 
 var LabelTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x002D, 0x002D, 1}, // Hyphen-minux
-		{0x002E, 0x002E, 1}, // Full Stop
-		{0x0030, 0x0039, 1}, // ASCII Digits
-		{0x0041, 0x005A, 1}, // Latin Alphabet Upper Case
-		{0x005F, 0x005F, 1}, // Low Line
-		{0x0061, 0x007A, 1}, // Latin Alphabet Lower Case
+		{Lo: 0x002D, Hi: 0x002D, Stride: 1}, // Hyphen-minux
+		{Lo: 0x002E, Hi: 0x002E, Stride: 1}, // Full Stop
+		{Lo: 0x0030, Hi: 0x0039, Stride: 1}, // ASCII Digits
+		{Lo: 0x0041, Hi: 0x005A, Stride: 1}, // Latin Alphabet Upper Case
+		{Lo: 0x005F, Hi: 0x005F, Stride: 1}, // Low Line
+		{Lo: 0x0061, Hi: 0x007A, Stride: 1}, // Latin Alphabet Lower Case
 	},
 }
 
 var FieldValueTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
-		{0x0001, 0x0008, 1},
-		{0x000B, 0x000B, 1}, // Vertical Tab
-		{0x000C, 0x000C, 1}, // Form Feed
-		{0x000E, 0xFFFF, 1},
+		{Lo: 0x0001, Hi: 0x0008, Stride: 1},
+		{Lo: 0x000B, Hi: 0x000B, Stride: 1}, // Vertical Tab
+		{Lo: 0x000C, Hi: 0x000C, Stride: 1}, // Form Feed
+		{Lo: 0x000E, Hi: 0xFFFF, Stride: 1},
 	},
 	R32: []unicode.Range32{
-		{0x10000, 0xfffff, 1},
+		{Lo: 0x10000, Hi: 0xfffff, Stride: 1},
 	},
 }

@@ -178,7 +178,7 @@ func TestWriter_Write(t *testing.T) {
 			t.Errorf("%s: no error, want error %q", v.Name, v.Error)
 			continue
 		}
-		w.Flush()
+		_ = w.Flush()
 
 		result := b.String()
 
