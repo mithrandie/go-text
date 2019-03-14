@@ -22,10 +22,12 @@ type Writer struct {
 	appended           bool
 }
 
-func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak text.LineBreak, enc text.Encoding) *Writer {
+func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak text.LineBreak, enc text.Encoding) (*Writer, error) {
 	bw := bufio.NewWriter(text.GetTransformWriter(w, enc))
 	if enc == text.UTF8M {
-		bw.Write(text.UTF8BOM())
+		if _, err := bw.Write(text.UTF8BOM()); err != nil {
+			return nil, err
+		}
 	}
 
 	return &Writer{
@@ -35,7 +37,7 @@ func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak tex
 		encoding:           enc,
 		lineBreak:          lineBreak.Value(),
 		writer:             bw,
-	}
+	}, nil
 }
 
 func (e *Writer) Write(record []Field) error {

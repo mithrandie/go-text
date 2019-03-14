@@ -131,12 +131,12 @@ func TestWriter_Write(t *testing.T) {
 	for _, v := range writerWriteTests {
 		w := new(bytes.Buffer)
 
-		e := NewWriter(w, v.LineBreak, v.Encoding)
+		e, _ := NewWriter(w, v.LineBreak, v.Encoding)
 		e.Delimiter = v.Delimiter
 		for _, r := range v.Records {
-			e.Write(r)
+			_ = e.Write(r)
 		}
-		e.Flush()
+		_ = e.Flush()
 
 		result := w.String()
 

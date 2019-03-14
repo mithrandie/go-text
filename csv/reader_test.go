@@ -261,6 +261,6 @@ func BenchmarkReader_ReadAll(b *testing.B) {
 		reader, _ := NewReader(r, text.UTF8)
 		reader.Delimiter = ','
 		reader.WithoutNull = false
-		reader.ReadAll()
+		_, _ = reader.ReadAll()
 	}
 }

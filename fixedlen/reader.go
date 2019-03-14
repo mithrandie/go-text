@@ -101,7 +101,9 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 					if c2 == '\n' {
 						lineBreak = text.CRLF
 					} else {
-						r.reader.UnreadRune()
+						if err = r.reader.UnreadRune(); err != nil {
+							return nil, err
+						}
 						lineBreak = text.CR
 					}
 					c = '\n'
@@ -150,7 +152,9 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 				if c2 == '\n' {
 					lineBreak = text.CRLF
 				} else {
-					r.reader.UnreadRune()
+					if err = r.reader.UnreadRune(); err != nil {
+						return nil, err
+					}
 					lineBreak = text.CR
 				}
 				c = '\n'
