@@ -29,8 +29,10 @@ func (p *Palette) SetEffector(key string, effector *Effector) {
 }
 
 func (p *Palette) Render(key string, text string) string {
-	if e, ok := p.effects[key]; ok && p.useEffects {
-		return e.Render(text)
+	if p.useEffects {
+		if e, ok := p.effects[key]; ok {
+			return e.Render(text)
+		}
 	}
 	return text
 }
