@@ -17,9 +17,7 @@ func run(m *testing.M) int {
 }
 
 func setup() {
-	UseEffect = true
 }
 
 func teardown() {
-	UseEffect = false
 }

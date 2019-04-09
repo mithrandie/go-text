@@ -21,8 +21,6 @@ type Scanner struct {
 	sourceFile string
 
 	escapeType EscapeType
-
-	err error
 }
 
 func (s *Scanner) Init(src string, useInteger bool) *Scanner {
@@ -110,16 +108,26 @@ func (s *Scanner) Scan() (Token, error) {
 	literal := string(ch)
 	line := s.line
 	column := s.column
+	var err error
 
 	switch {
 	case s.isDecimal(ch) || ch == '-':
-		isInteger := s.scanNumber(ch)
+		isInteger, e := s.scanNumber(ch)
 		literal = s.literal()
-		if s.err == nil {
-			_, err := strconv.ParseFloat(literal, 64)
-			if err != nil {
-				s.err = errors.New(fmt.Sprintf("could not convert %q into float64", literal))
+		if e == nil {
+			if s.UseInteger && isInteger {
+				_, err = strconv.ParseInt(literal, 10, 64)
+				if err != nil {
+					err = errors.New(fmt.Sprintf("could not convert %q into int64", literal))
+				}
+			} else {
+				_, err = strconv.ParseFloat(literal, 64)
+				if err != nil {
+					err = errors.New(fmt.Sprintf("could not convert %q into float64", literal))
+				}
 			}
+		} else {
+			err = e
 		}
 		if s.UseInteger {
 			if isInteger {
@@ -141,7 +149,7 @@ func (s *Scanner) Scan() (Token, error) {
 			token = NULL
 		}
 	case ch == '"':
-		s.scanString(ch)
+		err = s.scanString(ch)
 		var et EscapeType
 		literal, et = Unescape(s.trimQuotes())
 		if s.escapeType < et {
@@ -151,7 +159,7 @@ func (s *Scanner) Scan() (Token, error) {
 		token = STRING
 	}
 
-	return Token{Token: int(token), Literal: literal, Line: line, Column: column}, s.err
+	return Token{Token: int(token), Literal: literal, Line: line, Column: column}, err
 }
 
 func (s *Scanner) skipSpaces() rune {
@@ -188,12 +196,11 @@ func (s *Scanner) scanLiteral() {
 	}
 }
 
-func (s *Scanner) scanString(quote rune) {
+func (s *Scanner) scanString(quote rune) error {
 	for {
 		ch := s.next()
 		if ch == EOF {
-			s.err = errors.New("string not terminated")
-			break
+			return errors.New("string not terminated")
 		}
 
 		if ch == quote {
@@ -207,6 +214,7 @@ func (s *Scanner) scanString(quote rune) {
 			}
 		}
 	}
+	return nil
 }
 
 func (s *Scanner) scanDecimal() {
@@ -215,17 +223,16 @@ func (s *Scanner) scanDecimal() {
 	}
 }
 
-func (s *Scanner) scanNumber(ch rune) (isInteger bool) {
+func (s *Scanner) scanNumber(ch rune) (bool, error) {
 	if ch == '-' {
 		ch = s.next()
 	}
 
 	if !s.isDecimal(ch) {
-		s.err = errors.New("invalid number")
-		return
+		return false, errors.New("invalid number")
 	}
 
-	isInteger = true
+	isInteger := true
 	if s.isPositiveDecimal(ch) {
 		s.scanDecimal()
 	}
@@ -236,8 +243,7 @@ func (s *Scanner) scanNumber(ch rune) (isInteger bool) {
 		s.next()
 		if !s.isDecimal(s.peek()) {
 			s.next()
-			s.err = errors.New("invalid number")
-			return
+			return isInteger, errors.New("invalid number")
 		}
 		s.scanDecimal()
 	}
@@ -251,11 +257,10 @@ func (s *Scanner) scanNumber(ch rune) (isInteger bool) {
 		}
 		if !s.isDecimal(s.peek()) {
 			s.next()
-			s.err = errors.New("invalid number")
-			return
+			return isInteger, errors.New("invalid number")
 		}
 		s.scanDecimal()
 	}
 
-	return
+	return isInteger, nil
 }

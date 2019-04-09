@@ -1,6 +1,8 @@
 package json
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Lexer struct {
 	Scanner
@@ -11,13 +13,14 @@ type Lexer struct {
 
 func (l *Lexer) Lex(lval *yySymType) int {
 	tok, err := l.Scan()
+	lval.token = tok
+	l.token = lval.token
+
 	if err != nil {
 		l.Error(err.Error())
 	}
 
-	lval.token = tok
-	l.token = lval.token
-	return tok.Token
+	return lval.token.Token
 }
 
 func (l *Lexer) Error(e string) {
