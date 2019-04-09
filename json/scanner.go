@@ -196,12 +196,11 @@ func (s *Scanner) scanLiteral() {
 	}
 }
 
-func (s *Scanner) scanString(quote rune) (err error) {
+func (s *Scanner) scanString(quote rune) error {
 	for {
 		ch := s.next()
 		if ch == EOF {
-			err = errors.New("string not terminated")
-			break
+			return errors.New("string not terminated")
 		}
 
 		if ch == quote {
@@ -215,7 +214,7 @@ func (s *Scanner) scanString(quote rune) (err error) {
 			}
 		}
 	}
-	return
+	return nil
 }
 
 func (s *Scanner) scanDecimal() {
@@ -224,17 +223,16 @@ func (s *Scanner) scanDecimal() {
 	}
 }
 
-func (s *Scanner) scanNumber(ch rune) (isInteger bool, err error) {
+func (s *Scanner) scanNumber(ch rune) (bool, error) {
 	if ch == '-' {
 		ch = s.next()
 	}
 
 	if !s.isDecimal(ch) {
-		err = errors.New("invalid number")
-		return
+		return false, errors.New("invalid number")
 	}
 
-	isInteger = true
+	isInteger := true
 	if s.isPositiveDecimal(ch) {
 		s.scanDecimal()
 	}
@@ -245,8 +243,7 @@ func (s *Scanner) scanNumber(ch rune) (isInteger bool, err error) {
 		s.next()
 		if !s.isDecimal(s.peek()) {
 			s.next()
-			err = errors.New("invalid number")
-			return
+			return isInteger, errors.New("invalid number")
 		}
 		s.scanDecimal()
 	}
@@ -260,11 +257,10 @@ func (s *Scanner) scanNumber(ch rune) (isInteger bool, err error) {
 		}
 		if !s.isDecimal(s.peek()) {
 			s.next()
-			err = errors.New("invalid number")
-			return
+			return isInteger, errors.New("invalid number")
 		}
 		s.scanDecimal()
 	}
 
-	return
+	return isInteger, nil
 }
