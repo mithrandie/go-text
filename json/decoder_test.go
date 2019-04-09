@@ -174,19 +174,24 @@ var decoderDecodeTests = []struct {
 	},
 	{
 		Input: "[1, 1e+500]",
-		Error: "line 1, column 11: could not convert \"1e+500\" into float64",
+		Error: "line 1, column 5: could not convert \"1e+500\" into float64",
+	},
+	{
+		Input:      "[1, 12345678901234567890]",
+		UseInteger: true,
+		Error:      "line 1, column 5: could not convert \"12345678901234567890\" into int64",
 	},
 	{
 		Input: "[1, -a]",
-		Error: "line 1, column 7: invalid number",
+		Error: "line 1, column 5: invalid number",
 	},
 	{
 		Input: "[1, -1.a]",
-		Error: "line 1, column 9: invalid number",
+		Error: "line 1, column 5: invalid number",
 	},
 	{
 		Input: "[1, -1.1e+a]",
-		Error: "line 1, column 12: invalid number",
+		Error: "line 1, column 5: invalid number",
 	},
 	{
 		Input: "[1, 01]",
@@ -210,6 +215,7 @@ func TestDecoder_Decode(t *testing.T) {
 		}
 		if 0 < len(v.Error) {
 			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
+			t.Log(value)
 			continue
 		}
 		if !reflect.DeepEqual(value, v.Expect) {
