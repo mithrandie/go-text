@@ -71,14 +71,14 @@ func (r *Reader) ReadAll() ([][]text.RawText, error) {
 }
 
 func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
-	record := make([]text.RawText, 0, len(r.DelimiterPositions))
+	record := make([]text.RawText, len(r.DelimiterPositions))
 	recordPos := 0
 	delimiterPos := 0
 
 	var lineBreak text.LineBreak
 	lineEnd := false
 
-	for _, endPos := range r.DelimiterPositions {
+	for i, endPos := range r.DelimiterPositions {
 		if endPos < 0 || endPos <= delimiterPos {
 			return nil, errors.New(fmt.Sprintf("invalid delimiter position: %s", r.DelimiterPositions))
 		}
@@ -128,12 +128,14 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 		b := r.buf.Bytes()
 		b = bytes.TrimSpace(b)
 
-		if len(b) < 1 && !withoutNull {
-			record = append(record, nil)
+		if len(b) < 1 {
+			if withoutNull {
+				record[i] = text.RawText{}
+			}
 		} else {
 			field := make([]byte, len(b))
 			copy(field, b)
-			record = append(record, field)
+			record[i] = field
 		}
 	}
 

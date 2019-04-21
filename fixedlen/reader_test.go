@@ -90,7 +90,7 @@ var readerReadAllTests = []struct {
 	},
 	{
 		Name:               "ReadAll with empty fields",
-		Input:              "ab\nklmnopqurst",
+		Input:              "ab     \nklmnopqurst",
 		DelimiterPositions: []int{2, 5, 11},
 		WithoutNull:        false,
 		Encoding:           text.UTF8,
