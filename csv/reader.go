@@ -20,7 +20,7 @@ type Reader struct {
 	line   int
 	column int
 
-	recordBuf     bytes.Buffer
+	recordBuf     *bytes.Buffer
 	fieldStartPos []int
 	fieldQuoted   []bool
 
@@ -43,6 +43,9 @@ func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
 		reader:          bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:            1,
 		column:          0,
+		recordBuf:       &bytes.Buffer{},
+		fieldStartPos:   make([]int, 0, 20),
+		fieldQuoted:     make([]bool, 0, 20),
 		FieldsPerRecord: 0,
 		EnclosedAll:     true,
 	}, nil
@@ -88,8 +91,6 @@ func (r *Reader) ReadAll() ([][]text.RawText, error) {
 
 func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 	r.recordBuf.Reset()
-	r.fieldStartPos = r.fieldStartPos[:0]
-	r.fieldQuoted = r.fieldQuoted[:0]
 
 	fieldIndex := 0
 	fieldPosition := 0
@@ -115,8 +116,13 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 			continue
 		}
 
-		r.fieldStartPos = append(r.fieldStartPos, fieldPosition)
-		r.fieldQuoted = append(r.fieldQuoted, quoted)
+		if fieldIndex < len(r.fieldStartPos) {
+			r.fieldStartPos[fieldIndex] = fieldPosition
+			r.fieldQuoted[fieldIndex] = quoted
+		} else {
+			r.fieldStartPos = append(r.fieldStartPos, fieldPosition)
+			r.fieldQuoted = append(r.fieldQuoted, quoted)
+		}
 		fieldIndex++
 
 		if eol {
@@ -131,21 +137,23 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 		return nil, r.newError("wrong number of fields in line")
 	}
 
-	record := make([]text.RawText, 0, r.FieldsPerRecord)
+	record := make([]text.RawText, r.FieldsPerRecord)
 	recordStr := make([]byte, r.recordBuf.Len())
 	copy(recordStr, r.recordBuf.Bytes())
+	var endPos int
 	for i, pos := range r.fieldStartPos {
-		var endPos int
 		if i == len(r.fieldStartPos)-1 {
 			endPos = r.recordBuf.Len()
 		} else {
 			endPos = r.fieldStartPos[i+1]
 		}
 
-		if !withoutNull && pos == endPos && !r.fieldQuoted[i] {
-			record = append(record, nil)
+		if pos == endPos && !r.fieldQuoted[i] {
+			if withoutNull {
+				record[i] = text.RawText{}
+			}
 		} else {
-			record = append(record, recordStr[pos:endPos])
+			record[i] = recordStr[pos:endPos]
 		}
 	}
 

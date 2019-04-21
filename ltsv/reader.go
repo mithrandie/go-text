@@ -17,8 +17,8 @@ type Header struct {
 
 func NewHeader() *Header {
 	return &Header{
-		list: make([]string, 0, 16),
-		keys: make(map[string]bool, 16),
+		list: make([]string, 0, 20),
+		keys: make(map[string]bool, 20),
 	}
 }
 
@@ -84,8 +84,8 @@ func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
 		reader:      bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:        1,
 		column:      0,
-		keyBuf:      new(bytes.Buffer),
-		valueBuf:    new(bytes.Buffer),
+		keyBuf:      &bytes.Buffer{},
+		valueBuf:    &bytes.Buffer{},
 		record:      make(Record),
 		Header:      NewHeader(),
 	}, nil
@@ -128,19 +128,17 @@ func (r *Reader) Read() ([]text.RawText, error) {
 		}
 	}
 
-	values := make([]text.RawText, 0, r.Header.Len())
-	for _, key := range r.Header.Fields() {
+	values := make([]text.RawText, r.Header.Len())
+	for i, key := range r.Header.Fields() {
 		b, ok := r.record[key]
 		if !ok || b.Len() < 1 {
 			if r.WithoutNull {
-				values = append(values, text.RawText{})
-			} else {
-				values = append(values, nil)
+				values[i] = text.RawText{}
 			}
 		} else {
 			v := make([]byte, b.Len())
 			copy(v, b.Bytes())
-			values = append(values, v)
+			values[i] = v
 		}
 	}
 
