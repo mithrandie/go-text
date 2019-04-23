@@ -257,7 +257,7 @@ var readerReadAllTests = []struct {
 	},
 	{
 		Name:               "UTF-8 with BOM",
-		Input:              string(text.UTF8BOMS()) + "abcdefghi\nklmnopqurst",
+		Input:              text.UTF8BOM + "abcdefghi\nklmnopqurst",
 		DelimiterPositions: []int{2, 5, 11},
 		WithoutNull:        false,
 		Encoding:           text.UTF8M,
@@ -266,14 +266,6 @@ var readerReadAllTests = []struct {
 			{text.RawText("kl"), text.RawText("mno"), text.RawText("pqurst")},
 		},
 		ExpectLineBreak: text.LF,
-	},
-	{
-		Name:               "BOM does not exist error",
-		Input:              "abcdefghi\nklmnopqurst",
-		DelimiterPositions: []int{2, 5, 11},
-		WithoutNull:        false,
-		Encoding:           text.UTF8M,
-		Error:              "byte order mark for UTF-8 does not exist",
 	},
 	{
 		Name:               "ReadAll Without LineBreak",

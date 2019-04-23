@@ -294,7 +294,7 @@ var delimiterDelimitTests = []struct {
 		Expect:   []int{7, 11},
 	},
 	{
-		Input: string(text.UTF8BOMS()) +
+		Input: text.UTF8BOM +
 			"aaa bbb ccc ddd\n" +
 			"\n" +
 			"     \n" +
@@ -302,16 +302,6 @@ var delimiterDelimitTests = []struct {
 		NoHeader: true,
 		Encoding: text.UTF8M,
 		Expect:   []int{3, 7, 11, 15},
-	},
-	{
-		Input: "" +
-			"aaa bbb ccc ddd\n" +
-			"\n" +
-			"     \n" +
-			"aaa bbb ccc ddd\n",
-		NoHeader: true,
-		Encoding: text.UTF8M,
-		Error:    "byte order mark for UTF-8 does not exist",
 	},
 }
 

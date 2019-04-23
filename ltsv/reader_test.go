@@ -114,20 +114,13 @@ var readAllTests = []struct {
 		Name:        "UTF8 with BOM",
 		Encoding:    text.UTF8M,
 		WithoutNull: false,
-		Input:       string(text.UTF8BOMS()) + "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
+		Input:       text.UTF8BOM + "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
 		Output: [][]text.RawText{
 			{text.RawText("v1"), text.RawText("v2"), text.RawText("v3")},
 			{text.RawText("v4"), text.RawText("v5"), text.RawText("v6")},
 		},
 		Fields:    []string{"f1", "f2", "f3"},
 		LineBreak: text.LF,
-	},
-	{
-		Name:        "BOM does not exist",
-		Encoding:    text.UTF8M,
-		WithoutNull: false,
-		Input:       "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
-		Error:       "byte order mark for UTF-8 does not exist",
 	},
 }
 

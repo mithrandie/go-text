@@ -19,17 +19,10 @@ type Writer struct {
 }
 
 func NewWriter(w io.Writer, lineBreak text.LineBreak, enc text.Encoding) (*Writer, error) {
-	bw := bufio.NewWriter(text.GetTransformWriter(w, enc))
-	if enc == text.UTF8M {
-		if _, err := bw.Write(text.UTF8BOMS()); err != nil {
-			return nil, err
-		}
-	}
-
 	return &Writer{
 		Delimiter: ',',
 		lineBreak: lineBreak.Value(),
-		writer:    bw,
+		writer:    bufio.NewWriter(text.GetTransformWriter(w, enc)),
 	}, nil
 }
 

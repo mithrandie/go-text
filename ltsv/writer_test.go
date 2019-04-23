@@ -81,7 +81,7 @@ var writerWriteTests = []struct {
 		},
 		LineBreak: text.LF,
 		Encoding:  text.UTF8M,
-		Expect: string(text.UTF8BOMS()) +
+		Expect: text.UTF8BOM +
 			"c1:-1\tc2:a\tc3:\n" +
 			"c1:2.0123\tc2:2016-02-01T16:00:00.123456-07:00\tc3:abc,de",
 	},
