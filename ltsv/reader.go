@@ -17,8 +17,8 @@ type Header struct {
 
 func NewHeader() *Header {
 	return &Header{
-		list: make([]string, 0, 20),
-		keys: make(map[string]bool, 20),
+		list: make([]string, 0, 32),
+		keys: make(map[string]bool, 32),
 	}
 }
 
@@ -42,19 +42,23 @@ func (h *Header) Fields() []string {
 	return h.list
 }
 
-type Record map[string]*bytes.Buffer
+type Record map[string][]byte
 
 func (r Record) Write(key string, value []byte) {
 	if _, ok := r[key]; !ok {
-		r[key] = new(bytes.Buffer)
+		r[key] = make([]byte, 0, 1024)
 	}
-	r[key].Reset()
-	r[key].Write(value)
+	if len(r[key]) < len(value) {
+		r[key] = make([]byte, 0, len(value))
+	} else {
+		r[key] = r[key][:0]
+	}
+	r[key] = append(r[key], value...)
 }
 
 func (r Record) Clear() {
 	for k := range r {
-		r[k].Reset()
+		r[k] = r[k][:0]
 	}
 }
 
@@ -65,8 +69,8 @@ type Reader struct {
 	line   int
 	column int
 
-	keyBuf   *bytes.Buffer
-	valueBuf *bytes.Buffer
+	keyBuf   bytes.Buffer
+	valueBuf bytes.Buffer
 	record   Record
 
 	Header            *Header
@@ -84,8 +88,8 @@ func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
 		reader:      bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:        1,
 		column:      0,
-		keyBuf:      &bytes.Buffer{},
-		valueBuf:    &bytes.Buffer{},
+		keyBuf:      bytes.Buffer{},
+		valueBuf:    bytes.Buffer{},
 		record:      make(Record),
 		Header:      NewHeader(),
 	}, nil
@@ -131,13 +135,13 @@ func (r *Reader) Read() ([]text.RawText, error) {
 	values := make([]text.RawText, r.Header.Len())
 	for i, key := range r.Header.Fields() {
 		b, ok := r.record[key]
-		if !ok || b.Len() < 1 {
+		if !ok || len(b) < 1 {
 			if r.WithoutNull {
 				values[i] = text.RawText{}
 			}
 		} else {
-			v := make([]byte, b.Len())
-			copy(v, b.Bytes())
+			v := make([]byte, len(b))
+			copy(v, b)
 			values[i] = v
 		}
 	}

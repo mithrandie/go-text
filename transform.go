@@ -4,17 +4,21 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"reflect"
 	"strings"
 
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
 
-var utf8bom = []byte{0xef, 0xbb, 0xbf}
+var utf8bom = [3]byte{0xef, 0xbb, 0xbf}
 
-func UTF8BOM() []byte {
+func UTF8BOM() [3]byte {
 	return utf8bom
+}
+
+func UTF8BOMS() []byte {
+	bom := UTF8BOM()
+	return bom[0:3]
 }
 
 func DetectEncoding(r io.ReadSeeker) (Encoding, error) {
@@ -24,22 +28,38 @@ func DetectEncoding(r io.ReadSeeker) (Encoding, error) {
 
 	lead := make([]byte, 3)
 	n, err := r.Read(lead)
-	if _, err := r.Seek(0, io.SeekStart); err != nil {
-		return "", err
+	if _, e := r.Seek(0, io.SeekStart); e != nil {
+		if err != nil {
+			e = errors.New(strings.Join([]string{err.Error(), e.Error()}, "\n"))
+		}
+		return "", e
+	}
+	if err != nil || n != 3 {
+		return "", errors.New("cannot detect character encoding")
 	}
 
-	if err == nil && n == 3 && reflect.DeepEqual(UTF8BOM(), lead) {
-		return UTF8M, nil
+	bom := UTF8BOM()
+	for i := range bom {
+		if bom[i] != lead[i] {
+			return "", errors.New("cannot detect character encoding")
+		}
 	}
-	return "", errors.New("cannot detect character encoding")
+	return UTF8M, nil
 }
 
 func SkipBOM(r io.Reader, enc Encoding) (io.Reader, error) {
 	if enc == UTF8M {
 		lead := make([]byte, 3)
 		n, err := r.Read(lead)
-		if err != nil || n != 3 || !reflect.DeepEqual(UTF8BOM(), lead) {
+		if err != nil || n != 3 {
 			return r, errors.New("byte order mark for UTF-8 does not exist")
+		}
+
+		bom := UTF8BOM()
+		for i := range bom {
+			if bom[i] != lead[i] {
+				return r, errors.New("byte order mark for UTF-8 does not exist")
+			}
 		}
 	}
 	return r, nil

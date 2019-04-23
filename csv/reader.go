@@ -20,7 +20,7 @@ type Reader struct {
 	line   int
 	column int
 
-	recordBuf     *bytes.Buffer
+	recordBuf     bytes.Buffer
 	fieldStartPos []int
 	fieldQuoted   []bool
 
@@ -43,9 +43,9 @@ func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
 		reader:          bufio.NewReader(text.GetTransformDecoder(reader, enc)),
 		line:            1,
 		column:          0,
-		recordBuf:       &bytes.Buffer{},
-		fieldStartPos:   make([]int, 0, 20),
-		fieldQuoted:     make([]bool, 0, 20),
+		recordBuf:       bytes.Buffer{},
+		fieldStartPos:   make([]int, 0, 40),
+		fieldQuoted:     make([]bool, 0, 40),
 		FieldsPerRecord: 0,
 		EnclosedAll:     true,
 	}, nil
@@ -73,7 +73,7 @@ func (r *Reader) Read() ([]text.RawText, error) {
 }
 
 func (r *Reader) ReadAll() ([][]text.RawText, error) {
-	records := make([][]text.RawText, 0)
+	records := make([][]text.RawText, 0, 160)
 
 	for {
 		record, err := r.Read()

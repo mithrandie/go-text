@@ -152,7 +152,7 @@ var readAllTests = []struct {
 	},
 	{
 		Name:     "UTF8 with BOM",
-		Input:    string(text.UTF8BOM()) + "a,b,c\nd,e,f",
+		Input:    string(text.UTF8BOMS()) + "a,b,c\nd,e,f",
 		Encoding: text.UTF8M,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},

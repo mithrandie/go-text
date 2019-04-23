@@ -59,3 +59,10 @@ func TestUnescape(t *testing.T) {
 		t.Errorf("escape type = %d, want %d", escapeType, expectEscapeType)
 	}
 }
+
+func BenchmarkEscape(b *testing.B) {
+	s := "abcde\r\nabcde"
+	for i := 0; i < b.N; i++ {
+		_ = Escape(s)
+	}
+}

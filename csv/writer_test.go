@@ -121,7 +121,7 @@ var writerWriteTests = []struct {
 		Delimiter: ',',
 		LineBreak: text.LF,
 		Encoding:  text.UTF8M,
-		Expect: string(text.UTF8BOM()) + "\"c1\",\"c2\nsecond line\",\"c3\"\n" +
+		Expect: string(text.UTF8BOMS()) + "\"c1\",\"c2\nsecond line\",\"c3\"\n" +
 			"-1,,true\n" +
 			"2.0123,\"2016-02-01T16:00:00.123456-07:00\",\"abc,de\"\"f\"",
 	},

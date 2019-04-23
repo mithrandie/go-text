@@ -4,8 +4,25 @@ import (
 	"bytes"
 	"errors"
 	"strconv"
+	"sync"
 	"unicode"
 )
+
+var escapeBufPool = sync.Pool{
+	New: func() interface{} {
+		return &bytes.Buffer{}
+	},
+}
+
+func GetEscapeBuf() *bytes.Buffer {
+	b := escapeBufPool.Get().(*bytes.Buffer)
+	b.Reset()
+	return b
+}
+
+func PutEscapeBuf(b *bytes.Buffer) {
+	escapeBufPool.Put(b)
+}
 
 func EncodeRune(r rune) []byte {
 	encode := func(r rune) []byte {
@@ -32,7 +49,7 @@ func EncodeRune(r rune) []byte {
 
 func Escape(s string) string {
 	runes := []rune(s)
-	var buf bytes.Buffer
+	buf := GetEscapeBuf()
 
 	for _, r := range runes {
 		switch r {
@@ -62,12 +79,14 @@ func Escape(s string) string {
 			}
 		}
 	}
-	return buf.String()
+	ret := buf.String()
+	PutEscapeBuf(buf)
+	return ret
 }
 
 func EscapeWithHexDigits(s string) string {
 	runes := []rune(s)
-	var buf bytes.Buffer
+	buf := GetEscapeBuf()
 
 	for _, r := range runes {
 		switch r {
@@ -81,17 +100,21 @@ func EscapeWithHexDigits(s string) string {
 			}
 		}
 	}
-	return buf.String()
+	ret := buf.String()
+	PutEscapeBuf(buf)
+	return ret
 }
 
 func EscapeAll(s string) string {
 	runes := []rune(s)
-	var buf bytes.Buffer
+	buf := GetEscapeBuf()
 
 	for _, r := range runes {
 		buf.Write(EncodeRune(r))
 	}
-	return buf.String()
+	ret := buf.String()
+	PutEscapeBuf(buf)
+	return ret
 }
 
 func Unescape(s string) (string, EscapeType) {
@@ -138,7 +161,7 @@ func Unescape(s string) (string, EscapeType) {
 
 	escapeType := Backslash
 	runes := []rune(s)
-	var buf bytes.Buffer
+	buf := GetEscapeBuf()
 
 	pos := 0
 	slen := len(runes)
@@ -188,5 +211,7 @@ func Unescape(s string) (string, EscapeType) {
 		pos++
 	}
 
-	return buf.String(), escapeType
+	ret := buf.String()
+	PutEscapeBuf(buf)
+	return ret, escapeType
 }

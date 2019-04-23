@@ -257,7 +257,7 @@ var readerReadAllTests = []struct {
 	},
 	{
 		Name:               "UTF-8 with BOM",
-		Input:              string(text.UTF8BOM()) + "abcdefghi\nklmnopqurst",
+		Input:              string(text.UTF8BOMS()) + "abcdefghi\nklmnopqurst",
 		DelimiterPositions: []int{2, 5, 11},
 		WithoutNull:        false,
 		Encoding:           text.UTF8M,

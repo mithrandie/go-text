@@ -25,7 +25,7 @@ var detectEncodingTests = []struct {
 		Error: "cannot detect character encoding",
 	},
 	{
-		Input:  append(UTF8BOM(), []byte("abc")...),
+		Input:  append(UTF8BOMS(), []byte("abc")...),
 		Result: UTF8M,
 	},
 }
@@ -68,7 +68,7 @@ var skipBOMTests = []struct {
 		Error:    "byte order mark for UTF-8 does not exist",
 	},
 	{
-		Input:    append(UTF8BOM(), []byte("abc")...),
+		Input:    append(UTF8BOMS(), []byte("abc")...),
 		Encoding: UTF8M,
 		Result:   []byte("abc"),
 	},

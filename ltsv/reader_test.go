@@ -1,7 +1,6 @@
 package ltsv
 
 import (
-	"bytes"
 	"reflect"
 	"strings"
 	"testing"
@@ -11,14 +10,12 @@ import (
 
 func TestRecord_Clear(t *testing.T) {
 	r := make(Record)
-	r["key1"] = new(bytes.Buffer)
-	r["key1"].WriteString("a")
-	r["key2"] = new(bytes.Buffer)
-	r["key2"].WriteString("b")
+	r["key1"] = []byte("a")
+	r["key2"] = []byte("b")
 
 	r.Clear()
 	for k := range r {
-		if r[k].Len() != 0 {
+		if len(r[k]) != 0 {
 			t.Errorf("field length = %d, want %d", len(r), 0)
 		}
 	}
@@ -117,7 +114,7 @@ var readAllTests = []struct {
 		Name:        "UTF8 with BOM",
 		Encoding:    text.UTF8M,
 		WithoutNull: false,
-		Input:       string(text.UTF8BOM()) + "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
+		Input:       string(text.UTF8BOMS()) + "f1:v1\tf2:v2\tf3:v3\nf1:v4\tf2:v5\tf3:v6\n\n",
 		Output: [][]text.RawText{
 			{text.RawText("v1"), text.RawText("v2"), text.RawText("v3")},
 			{text.RawText("v4"), text.RawText("v5"), text.RawText("v6")},

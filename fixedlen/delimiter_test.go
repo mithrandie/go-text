@@ -294,7 +294,7 @@ var delimiterDelimitTests = []struct {
 		Expect:   []int{7, 11},
 	},
 	{
-		Input: string(text.UTF8BOM()) +
+		Input: string(text.UTF8BOMS()) +
 			"aaa bbb ccc ddd\n" +
 			"\n" +
 			"     \n" +
