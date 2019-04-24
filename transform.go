@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/japanese"
@@ -14,29 +15,57 @@ import (
 
 const UTF8BOM = "\ufeff"
 
-func DetectEncoding(r io.ReadSeeker) (Encoding, error) {
-	if _, err := r.Seek(0, io.SeekStart); err != nil {
-		return "", err
+var ErrUnknownEncoding = errors.New("cannot detect character encoding")
+
+func DetectEncodingByBOM(r io.ReadSeeker) (enc Encoding, err error) {
+	if _, err = r.Seek(0, io.SeekStart); err != nil {
+		return
 	}
 
 	lead := make([]byte, 3)
-	n, err := r.Read(lead)
-	if _, e := r.Seek(0, io.SeekStart); e != nil {
-		if err != nil {
-			e = errors.New(strings.Join([]string{err.Error(), e.Error()}, "\n"))
-		}
-		return "", e
-	}
-	if err != nil || n != 3 {
-		return "", errors.New("cannot detect character encoding")
+	n, _ := r.Read(lead)
+	if n == 3 && lead[0] == UTF8BOM[0] && lead[1] == UTF8BOM[1] && lead[2] == UTF8BOM[2] {
+		enc = UTF8M
+	} else {
+		err = ErrUnknownEncoding
 	}
 
-	for i := range UTF8BOM {
-		if UTF8BOM[i] != lead[i] {
-			return "", errors.New("cannot detect character encoding")
+	if _, e := r.Seek(0, io.SeekStart); e != nil {
+		err = e
+	}
+	return
+}
+
+func DetectEncoding(r io.ReadSeeker) (enc Encoding, err error) {
+	defer func() {
+		if _, e := r.Seek(0, io.SeekStart); e != nil {
+			err = e
+		}
+	}()
+
+	if enc, err = DetectEncodingByBOM(r); err == nil || err != ErrUnknownEncoding {
+		return
+	}
+
+	lead := make([]byte, 1024)
+	n, _ := r.Read(lead)
+	lead = lead[:n]
+
+	if utf8.Valid(lead) {
+		return UTF8, nil
+	}
+
+	str := string(lead)
+	if decoded, e := Decode(str, SJIS); e == nil {
+		if encoded, e := Encode(decoded, SJIS); e == nil {
+			if str == encoded {
+				return SJIS, nil
+			}
 		}
 	}
-	return UTF8M, nil
+
+	err = ErrUnknownEncoding
+	return
 }
 
 // Get a reader to transform character encoding from UTF-8 to another encoding.
@@ -78,28 +107,28 @@ func GetTransformWriter(w io.Writer, enc Encoding) io.Writer {
 // Encode a string from UTF-8 to another encoding.
 func Encode(str string, enc Encoding) (string, error) {
 	r := GetTransformEncoder(strings.NewReader(str), enc)
-	bytes, err := ioutil.ReadAll(r)
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return "", err
 	}
-	return string(bytes), nil
+	return string(b), nil
 }
 
 // Decode a string from any encoding to UTF-8.
 func Decode(str string, enc Encoding) (string, error) {
 	r := GetTransformDecoder(strings.NewReader(str), enc)
-	bytes, err := ioutil.ReadAll(r)
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return "", err
 	}
-	return string(bytes), nil
+	return string(b), nil
 }
 
 type bomPolicy uint8
 
 const (
 	writeBOM  bomPolicy = 0x01
-	IgnoreBOM bomPolicy = 0
+	ignoreBOM bomPolicy = 0
 )
 
 type UTF8MEncoder struct {
@@ -125,7 +154,7 @@ func (u *UTF8MEncoder) Transform(dst, src []byte, atEOF bool) (nDst, nSrc int, e
 		}
 		bom := []byte(UTF8BOM)
 		dst[0], dst[1], dst[2] = bom[0], bom[1], bom[2]
-		u.currentBOMPolicy = IgnoreBOM
+		u.currentBOMPolicy = ignoreBOM
 		nDst = 3
 	}
 

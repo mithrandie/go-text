@@ -12,20 +12,28 @@ var detectEncodingTests = []struct {
 	Error  string
 }{
 	{
-		Input: []byte{},
-		Error: "cannot detect character encoding",
+		Input:  []byte{},
+		Result: UTF8,
 	},
 	{
-		Input: []byte("ab"),
-		Error: "cannot detect character encoding",
-	},
-	{
-		Input: []byte("abc"),
-		Error: "cannot detect character encoding",
+		Input:  []byte("ab"),
+		Result: UTF8,
 	},
 	{
 		Input:  append([]byte(UTF8BOM), []byte("abc")...),
 		Result: UTF8M,
+	},
+	{
+		Input:  []byte("abc"),
+		Result: UTF8,
+	},
+	{
+		Input:  []byte{0x93, 0xfa, 0x96, 0x7b, 0x8c, 0xea},
+		Result: SJIS,
+	},
+	{
+		Input: []byte{0xa3, 0xe0, 0xb8, 0xf6, 0x6f, 0x28, 0xff, 0x65, 0x5f, 0xff, 0x65, 0xff, 0x61, 0x29, 0xa3, 0xe0, 0x30, 0xfd},
+		Error: "cannot detect character encoding",
 	},
 }
 
@@ -44,7 +52,7 @@ func TestDetectEncoding(t *testing.T) {
 			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
 			continue
 		}
-		if !reflect.DeepEqual(result, v.Result) {
+		if result != v.Result {
 			t.Errorf("result = %#v, want %#v for %q", result, v.Result, v.Input)
 		}
 	}
