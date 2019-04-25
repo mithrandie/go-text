@@ -104,7 +104,12 @@ func (e *Encoder) Encode() (string, error) {
 
 	var err error
 	buf := new(bytes.Buffer)
-	e.writer = bufio.NewWriter(text.GetTransformWriter(buf, e.Encoding))
+
+	writer, err := text.GetTransformWriter(buf, e.Encoding)
+	if err != nil {
+		return "", err
+	}
+	e.writer = bufio.NewWriter(writer)
 
 	fieldWidths := make([]int, e.fieldLen)
 

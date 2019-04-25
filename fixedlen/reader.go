@@ -23,7 +23,7 @@ type Reader struct {
 }
 
 func NewReader(r io.Reader, positions []int, enc text.Encoding) (*Reader, error) {
-	reader, err := text.SkipBOM(r, enc)
+	decoder, err := text.GetTransformDecoder(r, enc)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func NewReader(r io.Reader, positions []int, enc text.Encoding) (*Reader, error)
 		DelimiterPositions: positions,
 		WithoutNull:        false,
 		Encoding:           enc,
-		reader:             bufio.NewReader(text.GetTransformDecoder(reader, enc)),
+		reader:             bufio.NewReader(decoder),
 	}, nil
 }
 
