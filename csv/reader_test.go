@@ -20,8 +20,9 @@ var readAllTests = []struct {
 	Error       string
 }{
 	{
-		Name:  "NewLineLF",
-		Input: "a,b,c\nd,e,f",
+		Name:     "NewLineLF",
+		Input:    "a,b,c\nd,e,f",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
@@ -29,8 +30,9 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "NewLineCR",
-		Input: "a,b,c\rd,e,f",
+		Name:     "NewLineCR",
+		Input:    "a,b,c\rd,e,f",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
@@ -38,8 +40,9 @@ var readAllTests = []struct {
 		LineBreak: text.CR,
 	},
 	{
-		Name:  "NewLineCRLF",
-		Input: "a,b,c\r\nd,e,f",
+		Name:     "NewLineCRLF",
+		Input:    "a,b,c\r\nd,e,f",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
@@ -50,6 +53,7 @@ var readAllTests = []struct {
 		Name:      "TabDelimiter",
 		Delimiter: '\t',
 		Input:     "a\tb\tc\nd\te\tf",
+		Encoding:  text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
@@ -57,8 +61,9 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "QuotedString",
-		Input: "a,\"b\",\"ccc\ncc\"\nd,e,",
+		Name:     "QuotedString",
+		Input:    "a,\"b\",\"ccc\ncc\"\nd,e,",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("ccc\ncc")},
 			{text.RawText("d"), text.RawText("e"), nil},
@@ -66,8 +71,9 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "EscapeDoubleQuote",
-		Input: "a,\"b\",\"ccc\"\"cc\"\nd,e,\"\"",
+		Name:     "EscapeDoubleQuote",
+		Input:    "a,\"b\",\"ccc\"\"cc\"\nd,e,\"\"",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("ccc\"cc")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("")},
@@ -75,8 +81,9 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "DoubleQuoteInNoQuoteField",
-		Input: "a,b,ccc\"cc\nd,e,",
+		Name:     "DoubleQuoteInNoQuoteField",
+		Input:    "a,b,ccc\"cc\nd,e,",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("ccc\"cc")},
 			{text.RawText("d"), text.RawText("e"), nil},
@@ -84,16 +91,18 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "SingleValue",
-		Input: "a",
+		Name:     "SingleValue",
+		Input:    "a",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a")},
 		},
 		LineBreak: "",
 	},
 	{
-		Name:  "Trailing empty lines",
-		Input: "a,b,c\nd,e,f\n\n",
+		Name:     "Trailing empty lines",
+		Input:    "a,b,c\nd,e,f\n\n",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
 			{text.RawText("d"), text.RawText("e"), text.RawText("f")},
@@ -101,8 +110,9 @@ var readAllTests = []struct {
 		LineBreak: text.LF,
 	},
 	{
-		Name:  "Different Line Breaks",
-		Input: "a,b,\"c\r\nd\"\ne,f,g",
+		Name:     "Different Line Breaks",
+		Input:    "a,b,\"c\r\nd\"\ne,f,g",
+		Encoding: text.UTF8,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c\r\nd")},
 			{text.RawText("e"), text.RawText("f"), text.RawText("g")},
@@ -122,6 +132,7 @@ var readAllTests = []struct {
 	{
 		Name:        "Without Null",
 		Input:       "\"a\",\"b\",\"1\"\n\"d\",,2",
+		Encoding:    text.UTF8,
 		WithoutNull: true,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("1")},
@@ -131,24 +142,28 @@ var readAllTests = []struct {
 		EnclosedAll: true,
 	},
 	{
-		Name:  "ExtraneousQuote",
-		Input: "a,\"b\",\"ccc\ncc\nd,e,",
-		Error: "line 3, column 5: extraneous \" in field",
+		Name:     "ExtraneousQuote",
+		Input:    "a,\"b\",\"ccc\ncc\nd,e,",
+		Encoding: text.UTF8,
+		Error:    "line 3, column 5: extraneous \" in field",
 	},
 	{
-		Name:  "UnexpectedQuote",
-		Input: "a,\"b\",\"ccc\"cc\nd,e,",
-		Error: "line 1, column 11: unexpected \" in field",
+		Name:     "UnexpectedQuote",
+		Input:    "a,\"b\",\"ccc\"cc\nd,e,",
+		Encoding: text.UTF8,
+		Error:    "line 1, column 11: unexpected \" in field",
 	},
 	{
-		Name:  "NumberOfFieldsIsLess",
-		Input: "a,b,c\nd,e\nf,g,h",
-		Error: "line 2, column 0: wrong number of fields in line",
+		Name:     "NumberOfFieldsIsLess",
+		Input:    "a,b,c\nd,e\nf,g,h",
+		Encoding: text.UTF8,
+		Error:    "line 2, column 0: wrong number of fields in line",
 	},
 	{
-		Name:  "NumberOfFieldsIsGreater",
-		Input: "a,b,c\nd,e,f,g\nh,i,j",
-		Error: "line 2, column 6: wrong number of fields in line",
+		Name:     "NumberOfFieldsIsGreater",
+		Input:    "a,b,c\nd,e,f,g\nh,i,j",
+		Encoding: text.UTF8,
+		Error:    "line 2, column 6: wrong number of fields in line",
 	},
 	{
 		Name:     "UTF8 with BOM",

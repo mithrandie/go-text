@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"sync"
 	"unicode"
+
+	"github.com/mithrandie/go-text"
 )
 
 var escapeBufPool = sync.Pool{
@@ -146,8 +148,8 @@ func Unescape(s string) (string, EscapeType) {
 		}
 		pos = pos + 4
 
-		if 55296 <= high && high <= 56319 && pos+2 < len(runes) && runes[pos+1] == '\\' && runes[pos+2] == 'u' {
-			if low, err := readHexDigits(runes, pos+2); err == nil && 56320 <= low && low <= 57343 {
+		if text.IsHighSurrogate(high) && pos+2 < len(runes) && runes[pos+1] == '\\' && runes[pos+2] == 'u' {
+			if low, err := readHexDigits(runes, pos+2); err == nil && text.IsLowSurrogate(low) {
 				r = 65536 + (high-55296)*1024 + (low - 56320)
 				pos = pos + 6
 			}

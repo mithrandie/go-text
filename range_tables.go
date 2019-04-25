@@ -540,8 +540,6 @@ var RightToLeftTable = &unicode.RangeTable{
 var SJISSingleByteTable = &unicode.RangeTable{
 	R16: []unicode.Range16{
 		{Lo: 0x0020, Hi: 0x007e, Stride: 1}, // ASCII
-		{Lo: 0x00a5, Hi: 0x00a5, Stride: 1},
-		{Lo: 0x203e, Hi: 0x203e, Stride: 1},
 		{Lo: 0xff61, Hi: 0xff9f, Stride: 1}, // Half Width Katakana
 	},
 }

@@ -147,9 +147,14 @@ type Delimiter struct {
 }
 
 func NewDelimiter(r io.Reader, enc text.Encoding) (*Delimiter, error) {
+	decoder, err := text.GetTransformDecoder(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Delimiter{
 		Encoding:        enc,
-		reader:          bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:          bufio.NewReader(decoder),
 		spacesPerRecord: 5,
 	}, nil
 }

@@ -14,6 +14,7 @@ var writerWriteTests = []struct {
 	LineBreak text.LineBreak
 	Encoding  text.Encoding
 	Expect    string
+	Error     string
 }{
 	{
 		Name:      "Empty Data",
@@ -44,6 +45,7 @@ var writerWriteTests = []struct {
 		},
 		Delimiter: ',',
 		LineBreak: text.LF,
+		Encoding:  text.UTF8,
 		Expect: "\"c1\",\"c2\nsecond line\",\"c3\"\n" +
 			"-1,,true\n" +
 			"2.0123,\"2016-02-01T16:00:00.123456-07:00\",\"abc,de\"\"f\"",
@@ -69,6 +71,7 @@ var writerWriteTests = []struct {
 		},
 		Delimiter: '\t',
 		LineBreak: text.LF,
+		Encoding:  text.UTF8,
 		Expect: "\"c1\"\t\"c2\nsecond line\"\t\"c3\"\n" +
 			"-1\t\ttrue\n" +
 			"2.0123\t\"2016-02-01T16:00:00.123456-07:00\"\tabc,de\"f",
@@ -131,7 +134,16 @@ func TestWriter_Write(t *testing.T) {
 	for _, v := range writerWriteTests {
 		w := new(bytes.Buffer)
 
-		e, _ := NewWriter(w, v.LineBreak, v.Encoding)
+		e, err := NewWriter(w, v.LineBreak, v.Encoding)
+		if err != nil {
+			if v.Error == "" {
+				t.Errorf("%s: unexpected error %q", v.Name, err.Error())
+			} else if v.Error != err.Error() {
+				t.Errorf("%s: error %q, want error %q", v.Name, err.Error(), v.Error)
+			}
+			continue
+		}
+
 		e.Delimiter = v.Delimiter
 		for _, r := range v.Records {
 			_ = e.Write(r)

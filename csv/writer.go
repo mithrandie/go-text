@@ -2,7 +2,6 @@ package csv
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 
 	"github.com/mithrandie/go-text"
@@ -19,10 +18,15 @@ type Writer struct {
 }
 
 func NewWriter(w io.Writer, lineBreak text.LineBreak, enc text.Encoding) (*Writer, error) {
+	writer, err := text.GetTransformWriter(w, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Writer{
 		Delimiter: ',',
 		lineBreak: lineBreak.Value(),
-		writer:    bufio.NewWriter(text.GetTransformWriter(w, enc)),
+		writer:    bufio.NewWriter(writer),
 	}, nil
 }
 
@@ -63,7 +67,7 @@ func (e *Writer) Write(record []Field) error {
 					}
 				default:
 					if _, err := e.writer.WriteRune(r); err != nil {
-						fmt.Printf(err.Error())
+						return err
 					}
 				}
 

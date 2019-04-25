@@ -27,10 +27,15 @@ func NewWriter(w io.Writer, header []string, lineBreak text.LineBreak, enc text.
 		}
 	}
 
+	writer, err := text.GetTransformWriter(w, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Writer{
 		header:    header,
 		lineBreak: lineBreak.Value(),
-		writer:    bufio.NewWriter(text.GetTransformWriter(w, enc)),
+		writer:    bufio.NewWriter(writer),
 	}, nil
 }
 

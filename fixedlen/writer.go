@@ -23,13 +23,18 @@ type Writer struct {
 }
 
 func NewWriter(w io.Writer, delimiterPositions DelimiterPositions, lineBreak text.LineBreak, enc text.Encoding) (*Writer, error) {
+	writer, err := text.GetTransformWriter(w, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Writer{
 		InsertSpace:        false,
 		PadChar:            ' ',
 		delimiterPositions: delimiterPositions,
 		encoding:           enc,
 		lineBreak:          lineBreak.Value(),
-		writer:             bufio.NewWriter(text.GetTransformWriter(w, enc)),
+		writer:             bufio.NewWriter(writer),
 	}, nil
 }
 

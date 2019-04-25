@@ -78,9 +78,14 @@ type Reader struct {
 }
 
 func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
+	decoder, err := text.GetTransformDecoder(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Reader{
 		WithoutNull: false,
-		reader:      bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:      bufio.NewReader(decoder),
 		line:        1,
 		column:      0,
 		keyBuf:      bytes.Buffer{},

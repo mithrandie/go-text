@@ -23,11 +23,16 @@ type Reader struct {
 }
 
 func NewReader(r io.Reader, positions []int, enc text.Encoding) (*Reader, error) {
+	decoder, err := text.GetTransformDecoder(r, enc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Reader{
 		DelimiterPositions: positions,
 		WithoutNull:        false,
 		Encoding:           enc,
-		reader:             bufio.NewReader(text.GetTransformDecoder(r, enc)),
+		reader:             bufio.NewReader(decoder),
 	}, nil
 }
 
