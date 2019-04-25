@@ -36,6 +36,7 @@ func IsLowSurrogate(r rune) bool {
 var ErrUnknownEncoding = errors.New("cannot detect character encoding")
 var ErrInvalidEncoding = errors.New("invalid character encoding")
 
+// Detects character encoding
 func DetectEncoding(r io.ReadSeeker) (detected Encoding, err error) {
 	return DetectInSpecifiedEncoding(r, AUTO)
 }
