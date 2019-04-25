@@ -193,6 +193,10 @@ var inferEncodingTests = []struct {
 		Expect: SJIS,
 	},
 	{
+		Input:  utf16be("ⲂⲆⲈ"),
+		Expect: UTF16BE,
+	},
+	{
 		Input: []byte{0xd8, 0x00, 0xd8, 0x00},
 		Error: "cannot detect character encoding",
 	},

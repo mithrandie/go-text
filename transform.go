@@ -121,10 +121,12 @@ func InferEncoding(b []byte, eof bool) (Encoding, error) {
 			}
 		}
 
-		if !(len(validEnc) == 1 && -1 < nextPos[utf16Idx]) {
-			if len(validEnc) < 2 || !isInRange(pos) {
-				break
-			}
+		if !isInRange(pos) {
+			break
+		}
+
+		if (len(validEnc)) < 2 && !(len(validEnc) == 1 && -1 < nextPos[utf16Idx]) {
+			break
 		}
 
 		if nextPos[sjisIdx] == pos {
@@ -182,7 +184,7 @@ func InferEncoding(b []byte, eof bool) (Encoding, error) {
 				} else if b[pos+1] == 0x00 && between(b[pos], 0x00, 0xff) {
 					latinLeCnt++
 				}
-				if 4 < latinBeCnt || 4 < latinLeCnt {
+				if 5 < latinBeCnt || 5 < latinLeCnt {
 					goto InferredAsUTF16
 				}
 
