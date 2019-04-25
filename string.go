@@ -42,18 +42,28 @@ func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool, countF
 
 // Calculates byte size of a character.
 func RuneByteSize(r rune, encoding Encoding) int {
-	switch encoding {
-	case SJIS:
+	if encoding == SJIS {
 		return sjisRuneByteSize(r)
-	default:
-		return len(string(r))
+	} else if isUTF16Encoding(encoding) {
+		return utf16RuneByteSize(r)
 	}
+	return len(string(r))
+}
+
+func isUTF16Encoding(enc Encoding) bool {
+	return enc == UTF16 || enc == UTF16BE || enc == UTF16LE || enc == UTF16BEM || enc == UTF16LEM
 }
 
 func sjisRuneByteSize(r rune) int {
-	switch {
-	case unicode.In(r, SJISSingleByteTable) || unicode.IsControl(r):
+	if unicode.In(r, SJISSingleByteTable) || unicode.IsControl(r) {
 		return 1
+	}
+	return 2
+}
+
+func utf16RuneByteSize(r rune) int {
+	if 65536 <= r {
+		return 4
 	}
 	return 2
 }
@@ -61,13 +71,8 @@ func sjisRuneByteSize(r rune) int {
 // Calculates byte size of a string.
 func ByteSize(s string, encoding Encoding) int {
 	size := 0
-	switch encoding {
-	case UTF8, UTF8M:
-		size = len(s)
-	default:
-		for _, c := range s {
-			size = size + RuneByteSize(c, encoding)
-		}
+	for _, c := range s {
+		size = size + RuneByteSize(c, encoding)
 	}
 	return size
 }

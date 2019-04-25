@@ -7,6 +7,7 @@ Package text and the sub-packages are Go libraries to operate text.
 
 ## Supported Character Encodings
 - UTF-8
+- UTF-16
 - Shift-JIS
 
 ## Sub Packages

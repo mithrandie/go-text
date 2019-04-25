@@ -146,6 +146,11 @@ var byteSizeTests = []struct {
 		Encoding: SJIS,
 		Expect:   9,
 	},
+	{
+		String:   "日本語🍺",
+		Encoding: UTF16,
+		Expect:   10,
+	},
 }
 
 func TestByteSize(t *testing.T) {
