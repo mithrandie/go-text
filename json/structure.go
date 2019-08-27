@@ -78,6 +78,30 @@ func (obj *Object) Update(key string, val Structure) {
 	}
 }
 
+func (obj *Object) Keys() []string {
+	list := make([]string, len(obj.Members))
+	for i := range obj.Members {
+		list[i] = obj.Members[i].Key
+	}
+	return list
+}
+
+func (obj *Object) Values() []Structure {
+	list := make([]Structure, len(obj.Members))
+	for i := range obj.Members {
+		list[i] = obj.Members[i].Value
+	}
+	return list
+}
+
+func (obj *Object) Range(fn func(key string, value Structure) bool) {
+	for _, m := range obj.Members {
+		if !fn(m.Key, m.Value) {
+			break
+		}
+	}
+}
+
 func (obj Object) Encode() string {
 	strs := make([]string, 0, obj.Len())
 	for _, m := range obj.Members {

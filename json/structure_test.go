@@ -60,4 +60,40 @@ func TestObject(t *testing.T) {
 	if encoded != expectJson {
 		t.Errorf("json = %s, want %s", encoded, expectJson)
 	}
+
+	keys := obj.Keys()
+	expectKeys := []string{"str", "ar", "null", "bool"}
+	if !reflect.DeepEqual(keys, expectKeys) {
+		t.Errorf("keys = %s, want %s", keys, expectKeys)
+	}
+
+	values := obj.Values()
+	expectValues := []Structure{
+		String("updated"),
+		Array{
+			Number(1),
+			Number(2),
+			Number(3),
+			Float(4.56),
+			Integer(789),
+		},
+		Null{},
+		Boolean(false),
+	}
+	if !reflect.DeepEqual(values, expectValues) {
+		t.Errorf("values = %s, want %s", values, expectValues)
+	}
+
+	appendedKeys := make([]string, 0, obj.Len())
+	obj.Range(func(key string, value Structure) bool {
+		if key == "null" {
+			return false
+		}
+		appendedKeys = append(appendedKeys, key)
+		return true
+	})
+	expectAppendedKeys := []string{"str", "ar"}
+	if !reflect.DeepEqual(appendedKeys, expectAppendedKeys) {
+		t.Errorf("appended keys = %s, want %s", appendedKeys, expectAppendedKeys)
+	}
 }
