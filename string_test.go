@@ -61,14 +61,14 @@ var widthTests = []struct {
 		Expect:               10,
 	},
 	{
-		String:               "abc" + string(0x200b) + "def",
+		String:               "abc" + string(rune(0x200b)) + "def",
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		CountFormatCode:      false,
 		Expect:               6,
 	},
 	{
-		String:               "abc" + string(0x200b) + "def",
+		String:               "abc" + string(rune(0x200b)) + "def",
 		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		CountFormatCode:      true,
