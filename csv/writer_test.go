@@ -74,7 +74,33 @@ var writerWriteTests = []struct {
 		Encoding:  text.UTF8,
 		Expect: "\"c1\"\t\"c2\nsecond line\"\t\"c3\"\n" +
 			"-1\t\ttrue\n" +
-			"2.0123\t\"2016-02-01T16:00:00.123456-07:00\"\tabc,de\"f",
+			"2.0123\t\"2016-02-01T16:00:00.123456-07:00\"\t\"abc,de\"\"f\"",
+	},
+	{
+		Name: "CSV with Specified Delimiter",
+		Records: [][]Field{
+			{
+				{Contents: "c1", Quote: true},
+				{Contents: "c2\nsecond line", Quote: true},
+				{Contents: "c3", Quote: true},
+			},
+			{
+				{Contents: "-1", Quote: false},
+				{Contents: "", Quote: false},
+				{Contents: "true", Quote: false},
+			},
+			{
+				{Contents: "2.0123", Quote: false},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Quote: true},
+				{Contents: "\"abc,def", Quote: false},
+			},
+		},
+		Delimiter: ';',
+		LineBreak: text.LF,
+		Encoding:  text.UTF8,
+		Expect: "\"c1\";\"c2\nsecond line\";\"c3\"\n" +
+			"-1;;true\n" +
+			"2.0123;\"2016-02-01T16:00:00.123456-07:00\";\"\"\"abc,def\"",
 	},
 	{
 		Name: "Encode to SJIS",
@@ -153,7 +179,9 @@ func TestWriter_Write(t *testing.T) {
 		result := w.String()
 
 		if result != v.Expect {
-			t.Errorf("%s: result = %q, want %q", v.Name, result, v.Expect)
+			t.Errorf("%s:\n"+
+				"  result = %q\n"+
+				"    want = %q", v.Name, result, v.Expect)
 		}
 	}
 }

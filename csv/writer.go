@@ -46,7 +46,7 @@ func (e *Writer) Write(record []Field) error {
 			}
 		}
 
-		if record[i].Quote || e.includeDelimiter(record[i].Contents) {
+		if record[i].Quote || e.includeDelimiterOrQuote(record[i].Contents) {
 			if err := e.writer.WriteByte(QuotationMark); err != nil {
 				return err
 			}
@@ -89,9 +89,9 @@ func (e *Writer) Flush() error {
 	return e.writer.Flush()
 }
 
-func (e *Writer) includeDelimiter(s string) bool {
+func (e *Writer) includeDelimiterOrQuote(s string) bool {
 	for _, r := range s {
-		if r == e.Delimiter {
+		if r == e.Delimiter || r == QuotationMark {
 			return true
 		}
 	}
