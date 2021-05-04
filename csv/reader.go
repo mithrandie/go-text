@@ -12,9 +12,10 @@ import (
 )
 
 type Reader struct {
-	Delimiter   rune
-	WithoutNull bool
-	Encoding    text.Encoding
+	Delimiter         rune
+	WithoutNull       bool
+	AllowUnevenFields bool
+	Encoding          text.Encoding
 
 	reader *bufio.Reader
 	line   int
@@ -37,17 +38,18 @@ func NewReader(r io.Reader, enc text.Encoding) (*Reader, error) {
 	}
 
 	return &Reader{
-		Delimiter:       ',',
-		WithoutNull:     false,
-		Encoding:        enc,
-		reader:          bufio.NewReader(decoder),
-		line:            1,
-		column:          0,
-		recordBuf:       bytes.Buffer{},
-		fieldStartPos:   make([]int, 0, 40),
-		fieldQuoted:     make([]bool, 0, 40),
-		FieldsPerRecord: 0,
-		EnclosedAll:     true,
+		Delimiter:         ',',
+		WithoutNull:       false,
+		AllowUnevenFields: false,
+		Encoding:          enc,
+		reader:            bufio.NewReader(decoder),
+		line:              1,
+		column:            0,
+		recordBuf:         bytes.Buffer{},
+		fieldStartPos:     make([]int, 0, 40),
+		fieldQuoted:       make([]bool, 0, 40),
+		FieldsPerRecord:   0,
+		EnclosedAll:       true,
 	}, nil
 }
 
@@ -96,7 +98,10 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 	fieldPosition := 0
 	for {
 		if 0 < r.FieldsPerRecord && r.FieldsPerRecord <= fieldIndex {
-			return nil, r.newError("wrong number of fields in line")
+			if !r.AllowUnevenFields {
+				return nil, r.newError("wrong number of fields in line")
+			}
+			r.FieldsPerRecord = fieldIndex + 1
 		}
 
 		fieldPosition = r.recordBuf.Len()
@@ -133,8 +138,10 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 	if r.FieldsPerRecord < 1 {
 		r.FieldsPerRecord = fieldIndex
 	} else if fieldIndex < r.FieldsPerRecord {
-		r.line--
-		return nil, r.newError("wrong number of fields in line")
+		if !r.AllowUnevenFields {
+			r.line--
+			return nil, r.newError("wrong number of fields in line")
+		}
 	}
 
 	record := make([]text.RawText, r.FieldsPerRecord)

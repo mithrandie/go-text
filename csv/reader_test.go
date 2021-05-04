@@ -9,15 +9,17 @@ import (
 )
 
 var readAllTests = []struct {
-	Name        string
-	Encoding    text.Encoding
-	Delimiter   rune
-	WithoutNull bool
-	Input       string
-	Output      [][]text.RawText
-	LineBreak   text.LineBreak
-	EnclosedAll bool
-	Error       string
+	Name              string
+	Encoding          text.Encoding
+	Delimiter         rune
+	WithoutNull       bool
+	AllowUnevenFields bool
+	Input             string
+	Output            [][]text.RawText
+	LineBreak         text.LineBreak
+	FieldsPerRecord   int
+	EnclosedAll       bool
+	Error             string
 }{
 	{
 		Name:     "NewLineLF",
@@ -142,25 +144,53 @@ var readAllTests = []struct {
 		EnclosedAll: true,
 	},
 	{
-		Name:     "ExtraneousQuote",
+		Name:              "Ignore Field Length Greater Error",
+		Input:             "a,b\nd,e\nf,g,h",
+		Encoding:          text.UTF8,
+		AllowUnevenFields: true,
+		Output: [][]text.RawText{
+			{text.RawText("a"), text.RawText("b")},
+			{text.RawText("d"), text.RawText("e")},
+			{text.RawText("f"), text.RawText("g"), text.RawText("h")},
+		},
+		LineBreak:       text.LF,
+		FieldsPerRecord: 3,
+		EnclosedAll:     false,
+	},
+	{
+		Name:              "Ignore Field Length Less Error",
+		Input:             "a,b,c\nd,e\nf,g,h",
+		Encoding:          text.UTF8,
+		AllowUnevenFields: true,
+		Output: [][]text.RawText{
+			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
+			{text.RawText("d"), text.RawText("e"), nil},
+			{text.RawText("f"), text.RawText("g"), text.RawText("h")},
+		},
+		LineBreak:       text.LF,
+		FieldsPerRecord: 3,
+		EnclosedAll:     false,
+	},
+	{
+		Name:     "Extraneous Quote",
 		Input:    "a,\"b\",\"ccc\ncc\nd,e,",
 		Encoding: text.UTF8,
 		Error:    "line 3, column 5: extraneous \" in field",
 	},
 	{
-		Name:     "UnexpectedQuote",
+		Name:     "Unexpected Quote",
 		Input:    "a,\"b\",\"ccc\"cc\nd,e,",
 		Encoding: text.UTF8,
 		Error:    "line 1, column 11: unexpected \" in field",
 	},
 	{
-		Name:     "NumberOfFieldsIsLess",
+		Name:     "Number Of Fields Is Less",
 		Input:    "a,b,c\nd,e\nf,g,h",
 		Encoding: text.UTF8,
 		Error:    "line 2, column 0: wrong number of fields in line",
 	},
 	{
-		Name:     "NumberOfFieldsIsGreater",
+		Name:     "Number Of Fields Is Greater",
 		Input:    "a,b,c\nd,e,f,g\nh,i,j",
 		Encoding: text.UTF8,
 		Error:    "line 2, column 6: wrong number of fields in line",
@@ -193,6 +223,7 @@ func TestReader_ReadAll(t *testing.T) {
 			r.Delimiter = v.Delimiter
 		}
 		r.WithoutNull = v.WithoutNull
+		r.AllowUnevenFields = v.AllowUnevenFields
 
 		records, err := r.ReadAll()
 
@@ -216,6 +247,10 @@ func TestReader_ReadAll(t *testing.T) {
 
 		if r.DetectedLineBreak != v.LineBreak {
 			t.Errorf("%s: line break = %q, want %q", v.Name, r.DetectedLineBreak, v.LineBreak)
+		}
+
+		if 0 < v.FieldsPerRecord && r.FieldsPerRecord != v.FieldsPerRecord {
+			t.Errorf("%s: fields per record = %d, want %d", v.Name, r.FieldsPerRecord, v.FieldsPerRecord)
 		}
 
 		if r.EnclosedAll != v.EnclosedAll {
