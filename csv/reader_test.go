@@ -164,8 +164,22 @@ var readAllTests = []struct {
 		AllowUnevenFields: true,
 		Output: [][]text.RawText{
 			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
-			{text.RawText("d"), text.RawText("e"), nil},
+			{text.RawText("d"), text.RawText("e")},
 			{text.RawText("f"), text.RawText("g"), text.RawText("h")},
+		},
+		LineBreak:       text.LF,
+		FieldsPerRecord: 3,
+		EnclosedAll:     false,
+	},
+	{
+		Name:              "Clear field information on every record parsing",
+		Input:             "a,b,c\nd\nf",
+		Encoding:          text.UTF8,
+		AllowUnevenFields: true,
+		Output: [][]text.RawText{
+			{text.RawText("a"), text.RawText("b"), text.RawText("c")},
+			{text.RawText("d")},
+			{text.RawText("f")},
 		},
 		LineBreak:       text.LF,
 		FieldsPerRecord: 3,
