@@ -93,6 +93,8 @@ func (r *Reader) ReadAll() ([][]text.RawText, error) {
 
 func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 	r.recordBuf.Reset()
+	r.fieldStartPos = r.fieldStartPos[:0]
+	r.fieldQuoted = r.fieldQuoted[:0]
 
 	fieldIndex := 0
 	fieldPosition := 0
@@ -121,13 +123,8 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 			continue
 		}
 
-		if fieldIndex < len(r.fieldStartPos) {
-			r.fieldStartPos[fieldIndex] = fieldPosition
-			r.fieldQuoted[fieldIndex] = quoted
-		} else {
-			r.fieldStartPos = append(r.fieldStartPos, fieldPosition)
-			r.fieldQuoted = append(r.fieldQuoted, quoted)
-		}
+		r.fieldStartPos = append(r.fieldStartPos, fieldPosition)
+		r.fieldQuoted = append(r.fieldQuoted, quoted)
 		fieldIndex++
 
 		if eol {
@@ -144,7 +141,7 @@ func (r *Reader) parseRecord(withoutNull bool) ([]text.RawText, error) {
 		}
 	}
 
-	record := make([]text.RawText, r.FieldsPerRecord)
+	record := make([]text.RawText, len(r.fieldStartPos))
 	recordStr := make([]byte, r.recordBuf.Len())
 	copy(recordStr, r.recordBuf.Bytes())
 	var endPos int
