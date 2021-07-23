@@ -8,6 +8,7 @@ const (
 	PlainTable Format = iota
 	GFMTable
 	OrgTable
+	BoxTable
 )
 
 type Field struct {

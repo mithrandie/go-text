@@ -13,7 +13,7 @@ var encoderEncodeTests = []struct {
 	Records              [][]Field
 	Alignments           []text.FieldAlignment
 	LineBreak            text.LineBreak
-	EastAsiaEncoding     bool
+	EastAsianEncoding    bool
 	CountDiacriticalSign bool
 	WithoutHeader        bool
 	Expect               string
@@ -24,7 +24,7 @@ var encoderEncodeTests = []struct {
 		Header:               []Field{},
 		Records:              [][]Field{},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     false,
+		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect:               "",
@@ -38,7 +38,7 @@ var encoderEncodeTests = []struct {
 		},
 		Records:              [][]Field{},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     false,
+		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -72,7 +72,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -119,7 +119,7 @@ var encoderEncodeTests = []struct {
 			text.LeftAligned,
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -155,7 +155,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -164,6 +164,88 @@ var encoderEncodeTests = []struct {
 			"|       -1 |                                                                       | false  |\n" +
 			"|   2.0123 | 2016-02-01T16:00:00.123456-07:00                                      | abcdef |\n" +
 			"| 34567890 |  ab\\|cdefghijklmnopqrstuvwxyzabcdefg<br />hi\"jk日本語あアｱＡ（<br />  |        |",
+	},
+	{
+		Name:   "Box Table",
+		Format: BoxTable,
+		Header: []Field{
+			{Contents: "c1", Alignment: text.Centering},
+			{Contents: "c2\nsecond line", Alignment: text.Centering},
+			{Contents: "c3", Alignment: text.Centering},
+		},
+		Records: [][]Field{
+			{
+				{Contents: "-1", Alignment: text.RightAligned},
+				{Contents: "UNKNOWN", Alignment: text.Centering},
+				{Contents: "false", Alignment: text.Centering},
+			},
+			{
+				{Contents: "2.0123", Alignment: text.RightAligned},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
+				{Contents: "abcdef", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "34567890", Alignment: text.RightAligned},
+				{Contents: " ab|cdefghijklmnopqrstuvwxyzabcdefg\nhi\"jk日本語あアｱＡ（\n", Alignment: text.LeftAligned},
+				{Contents: "NULL", Alignment: text.Centering},
+			},
+		},
+		LineBreak:            text.LF,
+		EastAsianEncoding:    false,
+		CountDiacriticalSign: false,
+		WithoutHeader:        false,
+		Expect: "" +
+			"┌──────────┬─────────────────────────────────────┬────────┐\n" +
+			"│    c1    │                 c2                  │   c3   │\n" +
+			"│          │             second line             │        │\n" +
+			"├──────────┼─────────────────────────────────────┼────────┤\n" +
+			"│       -1 │               UNKNOWN               │ false  │\n" +
+			"│   2.0123 │ 2016-02-01T16:00:00.123456-07:00    │ abcdef │\n" +
+			"│ 34567890 │  ab|cdefghijklmnopqrstuvwxyzabcdefg │  NULL  │\n" +
+			"│          │ hi\"jk日本語あアｱＡ（                │        │\n" +
+			"│          │                                     │        │\n" +
+			"└──────────┴─────────────────────────────────────┴────────┘",
+	},
+	{
+		Name:   "Box Table with East Asian Encoding",
+		Format: BoxTable,
+		Header: []Field{
+			{Contents: "c1", Alignment: text.Centering},
+			{Contents: "c2\nsecond line", Alignment: text.Centering},
+			{Contents: "c3", Alignment: text.Centering},
+		},
+		Records: [][]Field{
+			{
+				{Contents: "-1", Alignment: text.RightAligned},
+				{Contents: "UNKNOWN", Alignment: text.Centering},
+				{Contents: "false", Alignment: text.Centering},
+			},
+			{
+				{Contents: "2.0123", Alignment: text.RightAligned},
+				{Contents: "2016-02-01T16:00:00.123456-07:00", Alignment: text.LeftAligned},
+				{Contents: "abcdef", Alignment: text.LeftAligned},
+			},
+			{
+				{Contents: "34567890", Alignment: text.RightAligned},
+				{Contents: " ab|cdefghijklmnopqrstuvwxyzabcdefg\nhi\"jk日本語あアｱＡ（\n", Alignment: text.LeftAligned},
+				{Contents: "NULL", Alignment: text.Centering},
+			},
+		},
+		LineBreak:            text.LF,
+		EastAsianEncoding:    true,
+		CountDiacriticalSign: false,
+		WithoutHeader:        false,
+		Expect: "" +
+			"┌─────┬───────────────────┬────┐\n" +
+			"│    c1    │                  c2                  │   c3   │\n" +
+			"│          │             second line              │        │\n" +
+			"├─────┼───────────────────┼────┤\n" +
+			"│       -1 │               UNKNOWN                │ false  │\n" +
+			"│   2.0123 │ 2016-02-01T16:00:00.123456-07:00     │ abcdef │\n" +
+			"│ 34567890 │  ab|cdefghijklmnopqrstuvwxyzabcdefg  │  NULL  │\n" +
+			"│          │ hi\"jk日本語あアｱＡ（                 │        │\n" +
+			"│          │                                      │        │\n" +
+			"└─────┴───────────────────┴────┘",
 	},
 	{
 		Name:   "Right To Left Letters",
@@ -183,7 +265,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -214,7 +296,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     false,
+		EastAsianEncoding:    false,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -251,7 +333,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.CRLF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -289,7 +371,7 @@ var encoderEncodeTests = []struct {
 			},
 		},
 		LineBreak:            text.LF,
-		EastAsiaEncoding:     true,
+		EastAsianEncoding:    true,
 		CountDiacriticalSign: false,
 		WithoutHeader:        false,
 		Expect: "" +
@@ -311,7 +393,7 @@ func TestEncoder_Encode(t *testing.T) {
 		var e *Encoder
 		e = NewEncoder(v.Format, len(v.Records))
 		e.LineBreak = v.LineBreak
-		e.EastAsianEncoding = v.EastAsiaEncoding
+		e.EastAsianEncoding = v.EastAsianEncoding
 		e.CountDiacriticalSign = v.CountDiacriticalSign
 		e.WithoutHeader = v.WithoutHeader
 
