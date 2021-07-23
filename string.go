@@ -4,7 +4,7 @@ import (
 	"unicode"
 )
 
-// Calculates string width to be displayed.
+// Width calculates string width to be displayed.
 func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool, countFormatCode bool) int {
 	l := 0
 
@@ -23,7 +23,7 @@ func Width(s string, eastAsianEncoding bool, countDiacriticalSign bool, countFor
 	return l
 }
 
-// Calculates character width to be displayed.
+// RuneWidth calculates character width to be displayed.
 func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool, countFormatCode bool) int {
 	switch {
 	case unicode.IsControl(r):
@@ -40,7 +40,7 @@ func RuneWidth(r rune, eastAsianEncoding bool, countDiacriticalSign bool, countF
 	return 1
 }
 
-// Calculates byte size of a character.
+// RuneByteSize calculates byte size of a character.
 func RuneByteSize(r rune, encoding Encoding) int {
 	if encoding == SJIS {
 		return sjisRuneByteSize(r)
@@ -68,7 +68,7 @@ func utf16RuneByteSize(r rune) int {
 	return 2
 }
 
-// Calculates byte size of a string.
+// ByteSize calculates byte size of a string.
 func ByteSize(s string, encoding Encoding) int {
 	size := 0
 	for _, c := range s {
@@ -77,7 +77,7 @@ func ByteSize(s string, encoding Encoding) int {
 	return size
 }
 
-// Returns if a string is Right-to-Left horizontal writing characters.
+// IsRightToLeftLetters returns true if a string is Right-to-Left horizontal writing characters.
 func IsRightToLeftLetters(s string) bool {
 	inEscSeq := false // Ignore ANSI Escape Sequence
 	for _, r := range s {
