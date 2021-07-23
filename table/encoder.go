@@ -9,14 +9,71 @@ import (
 )
 
 const (
-	VLine             = '|'
-	HLine             = '-'
-	CrossLine         = '+'
-	PadChar           = ' '
-	AlignSign         = ':'
-	MarkdownLineBreak = "<br />"
-	EscapeChar        = '\\'
+	VLine                    = '|'
+	HLine                    = '-'
+	CrossLine                = '+'
+	PadChar                  = ' '
+	AlignSign                = ':'
+	MarkdownLineBreak        = "<br />"
+	EscapeChar               = '\\'
+	BoxHorizontal            = '─'
+	BoxVirtical              = '│'
+	BoxVirticalAndHorizontal = '┼'
+	BoxVirticalAndRIght      = '├'
+	BoxVirticalAndLeft       = '┤'
+	BoxDownAndRight          = '┌'
+	BoxDownAndLeft           = '┐'
+	BoxDownAndHorizontal     = '┬'
+	BoxUpAndRight            = '└'
+	BoxUpAndLeft             = '┘'
+	BoxUpAndHorizontal       = '┴'
 )
+
+type DrawingCharacterSet struct {
+	Horizontal            []byte
+	Virtical              []byte
+	VirticalAndHorizontal []byte
+	VirticalAndRight      []byte
+	VirticalAndLeft       []byte
+	DownAndRight          []byte
+	DownAndLeft           []byte
+	DownAndHorizontal     []byte
+	UpAndRight            []byte
+	UpAndLeft             []byte
+	UpAndHorizontal       []byte
+}
+
+func NewPlainDrawingCharacterSet() *DrawingCharacterSet {
+	return &DrawingCharacterSet{
+		Horizontal:            []byte(string(HLine)),
+		Virtical:              []byte(string(VLine)),
+		VirticalAndHorizontal: []byte(string(CrossLine)),
+		VirticalAndRight:      []byte(string(CrossLine)),
+		VirticalAndLeft:       []byte(string(CrossLine)),
+		DownAndRight:          []byte(string(CrossLine)),
+		DownAndLeft:           []byte(string(CrossLine)),
+		DownAndHorizontal:     []byte(string(CrossLine)),
+		UpAndRight:            []byte(string(CrossLine)),
+		UpAndLeft:             []byte(string(CrossLine)),
+		UpAndHorizontal:       []byte(string(CrossLine)),
+	}
+}
+
+func NewBoxDrawingCharacterSet() *DrawingCharacterSet {
+	return &DrawingCharacterSet{
+		Horizontal:            []byte(string(BoxHorizontal)),
+		Virtical:              []byte(string(BoxVirtical)),
+		VirticalAndHorizontal: []byte(string(BoxVirticalAndHorizontal)),
+		VirticalAndRight:      []byte(string(BoxVirticalAndRIght)),
+		VirticalAndLeft:       []byte(string(BoxVirticalAndLeft)),
+		DownAndRight:          []byte(string(BoxDownAndRight)),
+		DownAndLeft:           []byte(string(BoxDownAndLeft)),
+		DownAndHorizontal:     []byte(string(BoxDownAndHorizontal)),
+		UpAndRight:            []byte(string(BoxUpAndRight)),
+		UpAndLeft:             []byte(string(BoxUpAndLeft)),
+		UpAndHorizontal:       []byte(string(BoxUpAndHorizontal)),
+	}
+}
 
 type Encoder struct {
 	Format               Format
@@ -25,6 +82,9 @@ type Encoder struct {
 	CountDiacriticalSign bool
 	CountFormatCode      bool
 	Encoding             text.Encoding
+
+	// Plain Table or Box Table
+	DrawingCharacterSet *DrawingCharacterSet
 
 	// GFM or Org Table
 	WithoutHeader bool
@@ -42,6 +102,17 @@ type Encoder struct {
 }
 
 func NewEncoder(format Format, recordCounts int) *Encoder {
+	var drawingCharacterSet = func() *DrawingCharacterSet {
+		switch format {
+		case PlainTable:
+			return NewPlainDrawingCharacterSet()
+		case BoxTable:
+			return NewBoxDrawingCharacterSet()
+		default:
+			return nil
+		}
+	}()
+
 	return &Encoder{
 		Format:               format,
 		LineBreak:            text.LF,
@@ -49,6 +120,7 @@ func NewEncoder(format Format, recordCounts int) *Encoder {
 		CountDiacriticalSign: false,
 		CountFormatCode:      false,
 		Encoding:             text.UTF8,
+		DrawingCharacterSet:  drawingCharacterSet,
 		WithoutHeader:        false,
 		fieldLen:             0,
 		recordSet:            make([][]Field, 0, recordCounts),
@@ -116,24 +188,35 @@ func (e *Encoder) Encode() (string, error) {
 	for _, record := range e.recordSet {
 		for i, f := range record {
 			fw := f.Width
+			if e.Format == BoxTable && e.EastAsianEncoding && fw%2 == 1 {
+				fw = fw + 1
+			}
+
 			if fieldWidths[i] < fw {
 				fieldWidths[i] = fw
 			}
 		}
 	}
 
-	if e.Format == PlainTable || !e.WithoutHeader {
+	if e.DrawingCharacterSet != nil || !e.WithoutHeader {
 		for i, f := range e.header {
 			fw := f.Width
+			switch e.Format {
+			case BoxTable:
+				if e.EastAsianEncoding && fw%2 == 1 {
+					fw = fw + 1
+				}
+			case GFMTable:
+				if fw < 3 {
+					fw = 3
+				}
+			}
+
 			if fieldWidths[i] < fw {
 				fieldWidths[i] = fw
 			}
-			if e.Format == GFMTable {
-				if fieldWidths[i] < 3 {
-					fieldWidths[i] = 3
-				}
-			}
-			if ((fieldWidths[i] - f.Width) % 2) == 1 {
+
+			if !(e.Format == BoxTable && e.EastAsianEncoding) && ((fieldWidths[i]-f.Width)%2) == 1 {
 				fieldWidths[i] = fieldWidths[i] + 1
 			}
 		}
@@ -142,9 +225,9 @@ func (e *Encoder) Encode() (string, error) {
 	e.calculateLineWidth(fieldWidths)
 
 	appended := false
-	if e.Format == PlainTable || !e.WithoutHeader {
-		if e.Format == PlainTable {
-			if err = e.formatTextHR(fieldWidths); err != nil {
+	if e.DrawingCharacterSet != nil || !e.WithoutHeader {
+		if e.DrawingCharacterSet != nil {
+			if err = e.formatTextTopHR(fieldWidths); err != nil {
 				return "", err
 			}
 			if _, err = e.writer.WriteString(e.lineBreak); err != nil {
@@ -164,7 +247,7 @@ func (e *Encoder) Encode() (string, error) {
 		case OrgTable:
 			err = e.formatOrgHR(fieldWidths)
 		default:
-			err = e.formatTextHR(fieldWidths)
+			err = e.formatTextSeparatorHR(fieldWidths)
 		}
 		if err != nil {
 			return "", err
@@ -187,11 +270,11 @@ func (e *Encoder) Encode() (string, error) {
 			}
 		}
 
-		if e.Format == PlainTable {
+		if e.DrawingCharacterSet != nil {
 			if _, err = e.writer.WriteString(e.lineBreak); err != nil {
 				return "", err
 			}
-			if err = e.formatTextHR(fieldWidths); err != nil {
+			if err = e.formatTextBottomHR(fieldWidths); err != nil {
 				return "", err
 			}
 		}
@@ -221,7 +304,7 @@ func (e *Encoder) formatRecord(record []Field, widths []int) error {
 
 		line := make([]byte, 0, e.lineWidth*2)
 		for i := 0; i < e.fieldLen; i++ {
-			line = append(line, VLine)
+			line = e.appendVirticalLine(line)
 			line = append(line, PadChar)
 
 			if len(record) <= i || len(record[i].Lines) <= lineIdx || len(record[i].Lines[lineIdx]) < 1 {
@@ -250,7 +333,7 @@ func (e *Encoder) formatRecord(record []Field, widths []int) error {
 				line = append(line, bytes.Repeat([]byte(string(PadChar)), padLen+1)...)
 			}
 		}
-		line = append(line, VLine)
+		line = e.appendVirticalLine(line)
 		if _, err := e.writer.Write(line); err != nil {
 			return err
 		}
@@ -259,14 +342,71 @@ func (e *Encoder) formatRecord(record []Field, widths []int) error {
 	return nil
 }
 
-func (e *Encoder) formatTextHR(widths []int) error {
+func (e *Encoder) appendVirticalLine(line []byte) []byte {
+	if e.DrawingCharacterSet != nil {
+		line = append(line, e.DrawingCharacterSet.Virtical...)
+	} else {
+		line = append(line, VLine)
+	}
+	return line
+}
+
+func (e *Encoder) calcHorizontalCharLen(width int) int {
+	if e.Format == BoxTable && e.EastAsianEncoding {
+		return (width / 2) + 1
+	}
+	return width + 2
+}
+
+func (e *Encoder) formatTextTopHR(widths []int) error {
 	line := make([]byte, 0, e.lineWidth)
 
-	for _, w := range widths {
-		line = append(line, CrossLine)
-		line = append(line, bytes.Repeat([]byte{HLine}, w+2)...)
+	for i, w := range widths {
+		switch i {
+		case 0:
+			line = append(line, e.DrawingCharacterSet.DownAndRight...)
+		default:
+			line = append(line, e.DrawingCharacterSet.DownAndHorizontal...)
+		}
+		line = append(line, bytes.Repeat(e.DrawingCharacterSet.Horizontal, e.calcHorizontalCharLen(w))...)
 	}
-	line = append(line, CrossLine)
+	line = append(line, e.DrawingCharacterSet.DownAndLeft...)
+
+	_, err := e.writer.Write(line)
+	return err
+}
+
+func (e *Encoder) formatTextBottomHR(widths []int) error {
+	line := make([]byte, 0, e.lineWidth)
+
+	for i, w := range widths {
+		switch i {
+		case 0:
+			line = append(line, e.DrawingCharacterSet.UpAndRight...)
+		default:
+			line = append(line, e.DrawingCharacterSet.UpAndHorizontal...)
+		}
+		line = append(line, bytes.Repeat(e.DrawingCharacterSet.Horizontal, e.calcHorizontalCharLen(w))...)
+	}
+	line = append(line, e.DrawingCharacterSet.UpAndLeft...)
+
+	_, err := e.writer.Write(line)
+	return err
+}
+
+func (e *Encoder) formatTextSeparatorHR(widths []int) error {
+	line := make([]byte, 0, e.lineWidth)
+
+	for i, w := range widths {
+		switch i {
+		case 0:
+			line = append(line, e.DrawingCharacterSet.VirticalAndRight...)
+		default:
+			line = append(line, e.DrawingCharacterSet.VirticalAndHorizontal...)
+		}
+		line = append(line, bytes.Repeat(e.DrawingCharacterSet.Horizontal, e.calcHorizontalCharLen(w))...)
+	}
+	line = append(line, e.DrawingCharacterSet.VirticalAndLeft...)
 
 	_, err := e.writer.Write(line)
 	return err

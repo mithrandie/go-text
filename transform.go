@@ -36,7 +36,7 @@ func IsLowSurrogate(r rune) bool {
 var ErrUnknownEncoding = errors.New("cannot detect character encoding")
 var ErrInvalidEncoding = errors.New("invalid character encoding")
 
-// Detects character encoding
+// DetectEncoding Detects character encoding
 func DetectEncoding(r io.ReadSeeker) (detected Encoding, err error) {
 	return DetectInSpecifiedEncoding(r, AUTO)
 }
@@ -264,7 +264,7 @@ InferredAsUTF16:
 	return UTF16BE, nil
 }
 
-// Get a reader to transform character encoding from UTF-8 to another encoding.
+// GetTransformEncoder gets a reader to transform character encoding from UTF-8 to another encoding.
 func GetTransformEncoder(r io.Reader, enc Encoding) (io.Reader, error) {
 	switch enc {
 	case UTF8:
@@ -288,7 +288,7 @@ func GetTransformEncoder(r io.Reader, enc Encoding) (io.Reader, error) {
 	}
 }
 
-// Get a reader to transform character encoding from any encoding to UTF-8.
+// GetTransformDecoder gets a reader to transform character encoding from any encoding to UTF-8.
 func GetTransformDecoder(r io.Reader, enc Encoding) (io.Reader, error) {
 	switch enc {
 	case UTF8:
@@ -312,7 +312,7 @@ func GetTransformDecoder(r io.Reader, enc Encoding) (io.Reader, error) {
 	}
 }
 
-// Get a writer to transform character encoding from UTF-8 to another encoding.
+// GetTransformWriter gets a writer to transform character encoding from UTF-8 to another encoding.
 func GetTransformWriter(w io.Writer, enc Encoding) (io.Writer, error) {
 	switch enc {
 	case UTF8:
