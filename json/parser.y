@@ -13,7 +13,6 @@ import "strconv"
 }
 
 %type<structure>      structure
-%type<structure>      container
 %type<object_member>  object_member
 %type<object_members> object_members
 %type<structures>     array_items
@@ -30,20 +29,10 @@ structure
         $$ = nil
         yylex.(*Lexer).structure = $$
     }
-    | container
+    | value
     {
         $$ = $1
         yylex.(*Lexer).structure = $$
-    }
-
-container
-    : '{' object_members '}'
-    {
-        $$ = Object{Members: $2}
-    }
-    | '[' array_items ']'
-    {
-        $$ = Array($2)
     }
 
 object_member
@@ -81,9 +70,13 @@ array_items
     }
 
 value
-    : container
+    : '{' object_members '}'
     {
-        $$ = $1
+        $$ = Object{Members: $2}
+    }
+    | '[' array_items ']'
+    {
+        $$ = Array($2)
     }
     | STRING
     {
