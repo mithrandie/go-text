@@ -149,16 +149,28 @@ var decoderDecodeTests = []struct {
 		},
 	},
 	{
+		Input:  "1",
+		Expect: Number(1),
+	},
+	{
+		Input:  "\"text\"",
+		Expect: String("text"),
+	},
+	{
+		Input:  "true",
+		Expect: Boolean(true),
+	},
+	{
+		Input:  "1",
+		Expect: Number(1),
+	},
+	{
 		Input: "[1, \"abc\", true], []",
 		Error: "line 1, column 17: unexpected token \",\"",
 	},
 	{
 		Input: "[1, \"abc\", invalid]",
 		Error: "line 1, column 12: unexpected token \"invalid\"",
-	},
-	{
-		Input: "1",
-		Error: "line 1, column 1: unexpected token \"1\"",
 	},
 	{
 		Input: "{\"key\":\"value\", ",

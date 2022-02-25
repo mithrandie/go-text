@@ -1,9 +1,38 @@
 package json
 
 import (
-	"errors"
 	"fmt"
 )
+
+type DecodeError struct {
+	line    int
+	char    int
+	message string
+}
+
+func NewDecodeError(line int, char int, message string) *DecodeError {
+	return &DecodeError{
+		line:    line,
+		char:    char,
+		message: message,
+	}
+}
+
+func (e DecodeError) Error() string {
+	return fmt.Sprintf("line %d, column %d: %s", e.line, e.char, e.message)
+}
+
+func (e DecodeError) Line() int {
+	return e.line
+}
+
+func (e DecodeError) Char() int {
+	return e.line
+}
+
+func (e DecodeError) Message() string {
+	return e.message
+}
 
 type Decoder struct {
 	// Returns numeric values as Integer or Float instead of Number if true.
@@ -18,7 +47,7 @@ func (d Decoder) Decode(src string) (Structure, EscapeType, error) {
 	st, et, err := ParseJson(src, d.UseInteger)
 	if err != nil {
 		se := err.(*SyntaxError)
-		return st, et, errors.New(fmt.Sprintf("line %d, column %d: %s", se.Line, se.Column, se.Error()))
+		return st, et, NewDecodeError(se.Line, se.Column, se.Error())
 	}
 	return st, et, nil
 }
