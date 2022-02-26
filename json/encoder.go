@@ -126,7 +126,7 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 	case String:
 		str := structure.(String).Raw()
 		if 0 < len(str) {
-			if decoded, _, err := e.decoder.Decode(str); err == nil {
+			if decoded, _, err := e.decoder.Decode(str); err == nil && isComplexType(decoded) {
 				encoded = e.encodeStructure(decoded, depth)
 			} else {
 				encoded = e.effect(StringEffect, e.formatString(str))
@@ -163,4 +163,18 @@ func (e *Encoder) effect(key string, s string) string {
 		return s
 	}
 	return e.Palette.Render(key, s)
+}
+
+func isComplexType(s Structure) bool {
+	return isObject(s) || isArray(s)
+}
+
+func isObject(s Structure) bool {
+	_, ok := s.(Object)
+	return ok
+}
+
+func isArray(s Structure) bool {
+	_, ok := s.(Array)
+	return ok
 }

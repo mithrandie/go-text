@@ -22,6 +22,20 @@ var encoderEncodeTests = []struct {
 		Expect:      "\"abc\"",
 	},
 	{
+		Input:       String("1"),
+		Escape:      Backslash,
+		PrettyPrint: false,
+		LineBreak:   text.LF,
+		Expect:      "\"1\"",
+	},
+	{
+		Input:       String("01"),
+		Escape:      Backslash,
+		PrettyPrint: false,
+		LineBreak:   text.LF,
+		Expect:      "\"01\"",
+	},
+	{
 		Input:       Number(-1.234),
 		Escape:      Backslash,
 		PrettyPrint: false,
