@@ -148,7 +148,7 @@ func (n Float) Raw() float64 {
 type Integer int64
 
 func (n Integer) Encode() string {
-	return strconv.FormatInt(int64(n), 10)
+	return strconv.FormatFloat(float64(n), 'f', -1, 64)
 }
 
 func (n Integer) Raw() int64 {
