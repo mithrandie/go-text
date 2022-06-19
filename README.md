@@ -2,7 +2,7 @@
 
 The package text and the sub-packages are Go libraries to operate text.
 
-[![Build Status](https://travis-ci.org/mithrandie/go-text.svg?branch=master)](https://travis-ci.org/mithrandie/go-text)
+[![Testing](https://github.com/mithrandie/go-text/actions/workflows/testing.yml/badge.svg)](https://github.com/mithrandie/go-text/actions/workflows/testing.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
 ## Supported Character Encodings
