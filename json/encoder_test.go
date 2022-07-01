@@ -1,18 +1,21 @@
 package json
 
 import (
+	"math"
 	"testing"
 
 	"github.com/mithrandie/go-text"
 )
 
 var encoderEncodeTests = []struct {
-	Input       Structure
-	Escape      EscapeType
-	PrettyPrint bool
-	LineBreak   text.LineBreak
-	UsePalette  bool
-	Expect      string
+	Input          Structure
+	Escape         EscapeType
+	PrettyPrint    bool
+	NanInfHandling NanInfHandling
+	LineBreak      text.LineBreak
+	UsePalette     bool
+	Expect         string
+	Error          string
 }{
 	{
 		Input:       String("abc"),
@@ -41,6 +44,84 @@ var encoderEncodeTests = []struct {
 		PrettyPrint: false,
 		LineBreak:   text.LF,
 		Expect:      "-1.234",
+	},
+	{
+		Input:          Number(-1.234),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: CreateError,
+		LineBreak:      text.LF,
+		Expect:         "-1.234",
+	},
+	{
+		Input:          Number(-1.234),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToStringNotation,
+		LineBreak:      text.LF,
+		Expect:         "-1.234",
+	},
+	{
+		Input:          Number(math.Inf(1)),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToNull,
+		LineBreak:      text.LF,
+		Expect:         "null",
+	},
+	{
+		Input:          Number(math.Inf(1)),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: CreateError,
+		LineBreak:      text.LF,
+		Error:          "+Inf is not supported",
+	},
+	{
+		Input:          Number(math.Inf(1)),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToStringNotation,
+		LineBreak:      text.LF,
+		Expect:         "+Inf",
+	},
+	{
+		Input:          Number(math.NaN()),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToNull,
+		LineBreak:      text.LF,
+		Expect:         "null",
+	},
+	{
+		Input:          Number(math.NaN()),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: CreateError,
+		LineBreak:      text.LF,
+		Error:          "NaN is not supported",
+	},
+	{
+		Input:          Number(math.NaN()),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToStringNotation,
+		LineBreak:      text.LF,
+		Expect:         "NaN",
+	},
+	{
+		Input:       Float(-1.234),
+		Escape:      Backslash,
+		PrettyPrint: false,
+		LineBreak:   text.LF,
+		Expect:      "-1.234",
+	},
+	{
+		Input:       Integer(1234),
+		Escape:      Backslash,
+		PrettyPrint: false,
+		LineBreak:   text.LF,
+		Expect:      "1234",
 	},
 	{
 		Input:       Boolean(true),
@@ -328,6 +409,7 @@ func TestEncoder_Encode(t *testing.T) {
 
 		e.EscapeType = v.Escape
 		e.PrettyPrint = v.PrettyPrint
+		e.NanInfHandling = v.NanInfHandling
 		e.LineBreak = v.LineBreak
 		if v.UsePalette {
 			e.Palette = palette
@@ -335,7 +417,21 @@ func TestEncoder_Encode(t *testing.T) {
 			e.Palette = nil
 		}
 
-		result := e.Encode(v.Input)
+		result, err := e.Encode(v.Input)
+
+		if err != nil {
+			if len(v.Error) < 1 {
+				t.Errorf("unexpected error %q for %q", err, v.Input)
+			} else if err.Error() != v.Error {
+				t.Errorf("error %q, want error %q for %q", err.Error(), v.Error, v.Input)
+			}
+			continue
+		}
+		if 0 < len(v.Error) {
+			t.Errorf("no error, want error %q for %q", v.Error, v.Input)
+			continue
+		}
+
 		if result != v.Expect {
 			t.Errorf("result = %q, want %q for EscapeType:%d PrettyPrint:%t Input:%#v", result, v.Expect, v.Escape, v.PrettyPrint, v.Input)
 		}

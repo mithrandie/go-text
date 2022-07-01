@@ -1,6 +1,7 @@
 package json
 
 import (
+	"math"
 	"strconv"
 	"strings"
 )
@@ -128,6 +129,9 @@ func (ar Array) Encode() string {
 type Number float64
 
 func (n Number) Encode() string {
+	if n.IsNaN() || n.IsInf() {
+		return NullValue
+	}
 	return strconv.FormatFloat(float64(n), 'f', -1, 64)
 }
 
@@ -135,15 +139,23 @@ func (n Number) Raw() float64 {
 	return float64(n)
 }
 
-type Float float64
-
-func (n Float) Encode() string {
-	return strconv.FormatFloat(float64(n), 'f', -1, 64)
+func (n Number) IsNaN() bool {
+	return math.IsNaN(float64(n))
 }
 
-func (n Float) Raw() float64 {
-	return float64(n)
+func (n Number) IsInf() bool {
+	return math.IsInf(float64(n), 0)
 }
+
+func (n Number) IsPositiveInfinity() bool {
+	return math.IsInf(float64(n), 1)
+}
+
+func (n Number) IsNegativeInfinity() bool {
+	return math.IsInf(float64(n), -1)
+}
+
+type Float = Number
 
 type Integer int64
 
