@@ -116,9 +116,8 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) (string, error
 
 	switch v := structure.(type) {
 	case Object:
-		obj := structure.(Object)
-		strs := make([]string, 0, obj.Len())
-		for _, member := range obj.Members {
+		strs := make([]string, 0, v.Len())
+		for _, member := range v.Members {
 			s, err := e.encodeStructure(member.Value, depth+1)
 			if err != nil {
 				return encoded, err
@@ -137,9 +136,8 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) (string, error
 			e.lineBreak +
 			indent + string(EndObject)
 	case Array:
-		array := structure.(Array)
-		strs := make([]string, 0, len(array))
-		for _, v := range array {
+		strs := make([]string, 0, len(v))
+		for _, v := range v {
 			s, err := e.encodeStructure(v, depth+1)
 			if err != nil {
 				return encoded, err
@@ -170,7 +168,7 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) (string, error
 	case Integer:
 		encoded = e.effect(NumberEffect, structure.Encode())
 	case String:
-		str := structure.(String).Raw()
+		str := v.Raw()
 		if 0 < len(str) {
 			if decoded, _, err := e.decoder.Decode(str); err == nil && isComplexType(decoded) {
 				s, err := e.encodeStructure(decoded, depth)
