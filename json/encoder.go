@@ -1,6 +1,8 @@
 package json
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/mithrandie/go-text"
@@ -35,12 +37,43 @@ func NewJsonPalette() *color.Palette {
 	return p
 }
 
+type NanInfHandling int8
+
+const (
+	ConvertToNull NanInfHandling = iota
+	CreateError
+	ConvertToStringNotation
+)
+
+type FloatFormat int8
+
+const (
+	NoExponent FloatFormat = iota
+	ENotationForLargeExponents
+)
+
+type UnsupportedValueError struct {
+	Value string
+}
+
+func (e UnsupportedValueError) Error() string {
+	return fmt.Sprintf("%s is not supported", e.Value)
+}
+
+func NewUnsupportedValueError(value string) *UnsupportedValueError {
+	return &UnsupportedValueError{
+		Value: value,
+	}
+}
+
 type Encoder struct {
-	EscapeType   EscapeType
-	PrettyPrint  bool
-	LineBreak    text.LineBreak
-	IndentSpaces int
-	Palette      *color.Palette
+	EscapeType     EscapeType
+	PrettyPrint    bool
+	NanInfHandling NanInfHandling
+	FloatFormat    FloatFormat
+	LineBreak      text.LineBreak
+	IndentSpaces   int
+	Palette        *color.Palette
 
 	nameSeparator string
 	lineBreak     string
@@ -50,17 +83,19 @@ type Encoder struct {
 
 func NewEncoder() *Encoder {
 	return &Encoder{
-		EscapeType:    Backslash,
-		PrettyPrint:   false,
-		LineBreak:     text.LF,
-		IndentSpaces:  2,
-		Palette:       nil,
-		nameSeparator: string(NameSeparator),
-		decoder:       NewDecoder(),
+		EscapeType:     Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToNull,
+		FloatFormat:    NoExponent,
+		LineBreak:      text.LF,
+		IndentSpaces:   2,
+		Palette:        nil,
+		nameSeparator:  string(NameSeparator),
+		decoder:        NewDecoder(),
 	}
 }
 
-func (e *Encoder) Encode(structure Structure) string {
+func (e *Encoder) Encode(structure Structure) (string, error) {
 	if e.PrettyPrint {
 		e.lineBreak = e.LineBreak.Value()
 		e.nameSeparator = string(NameSeparator) + " "
@@ -78,7 +113,7 @@ func (e *Encoder) Encode(structure Structure) string {
 	return e.encodeStructure(structure, 0)
 }
 
-func (e *Encoder) encodeStructure(structure Structure, depth int) string {
+func (e *Encoder) encodeStructure(structure Structure, depth int) (string, error) {
 	var indent string
 	var elementIndent string
 	if e.PrettyPrint {
@@ -88,17 +123,20 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 
 	var encoded string
 
-	switch structure.(type) {
+	switch v := structure.(type) {
 	case Object:
-		obj := structure.(Object)
-		strs := make([]string, 0, obj.Len())
-		for _, member := range obj.Members {
+		strs := make([]string, 0, v.Len())
+		for _, member := range v.Members {
+			s, err := e.encodeStructure(member.Value, depth+1)
+			if err != nil {
+				return encoded, err
+			}
 			strs = append(
 				strs,
 				elementIndent+
 					e.effect(ObjectKeyEffect, e.formatString(member.Key))+
 					e.nameSeparator+
-					e.encodeStructure(member.Value, depth+1),
+					s,
 			)
 		}
 		encoded = string(BeginObject) +
@@ -107,10 +145,13 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 			e.lineBreak +
 			indent + string(EndObject)
 	case Array:
-		array := structure.(Array)
-		strs := make([]string, 0, len(array))
-		for _, v := range array {
-			strs = append(strs, elementIndent+e.encodeStructure(v, depth+1))
+		strs := make([]string, 0, len(v))
+		for _, v := range v {
+			s, err := e.encodeStructure(v, depth+1)
+			if err != nil {
+				return encoded, err
+			}
+			strs = append(strs, elementIndent+s)
 		}
 		if len(strs) < 1 {
 			encoded = string(BeginArray) + string(EndArray)
@@ -121,13 +162,33 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 				e.lineBreak +
 				indent + string(EndArray)
 		}
-	case Number, Float, Integer:
+	case Number:
+		switch e.NanInfHandling {
+		case CreateError:
+			if v.IsNaN() || v.IsInf() {
+				return encoded, NewUnsupportedValueError(e.formatFloat(v.Raw()))
+			}
+			encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
+		case ConvertToStringNotation:
+			encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
+		default:
+			if v.IsNaN() || v.IsInf() {
+				encoded = e.effect(NullEffect, NullValue)
+			} else {
+				encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
+			}
+		}
+	case Integer:
 		encoded = e.effect(NumberEffect, structure.Encode())
 	case String:
-		str := structure.(String).Raw()
+		str := v.Raw()
 		if 0 < len(str) {
 			if decoded, _, err := e.decoder.Decode(str); err == nil && isComplexType(decoded) {
-				encoded = e.encodeStructure(decoded, depth)
+				s, err := e.encodeStructure(decoded, depth)
+				if err != nil {
+					return encoded, err
+				}
+				encoded = s
 			} else {
 				encoded = e.effect(StringEffect, e.formatString(str))
 			}
@@ -140,7 +201,7 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) string {
 		encoded = e.effect(NullEffect, structure.Encode())
 	}
 
-	return encoded
+	return encoded, nil
 }
 
 func (e *Encoder) formatString(s string) string {
@@ -156,6 +217,15 @@ func (e *Encoder) formatString(s string) string {
 	}
 
 	return string(QuotationMark) + escaped + string(QuotationMark)
+}
+
+func (e *Encoder) formatFloat(f float64) string {
+	switch e.FloatFormat {
+	case ENotationForLargeExponents:
+		return strconv.FormatFloat(f, 'g', -1, 64)
+	default:
+		return strconv.FormatFloat(f, 'f', -1, 64)
+	}
 }
 
 func (e *Encoder) effect(key string, s string) string {

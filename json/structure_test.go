@@ -81,6 +81,7 @@ func TestObject(t *testing.T) {
 		Null{},
 		Boolean(false),
 	}
+
 	if !reflect.DeepEqual(values, expectValues) {
 		t.Errorf("values = %s, want %s", values, expectValues)
 	}
@@ -96,5 +97,64 @@ func TestObject(t *testing.T) {
 	expectAppendedKeys := []string{"str", "ar"}
 	if !reflect.DeepEqual(appendedKeys, expectAppendedKeys) {
 		t.Errorf("appended keys = %s, want %s", appendedKeys, expectAppendedKeys)
+	}
+}
+
+var numberEncodeTests = []struct {
+	value  Float
+	expect string
+}{
+	{
+		value:  1.234,
+		expect: "1.234",
+	},
+	{
+		value:  Number(math.Inf(1)),
+		expect: "null",
+	},
+	{
+		value:  Number(math.Inf(-1)),
+		expect: "null",
+	},
+	{
+		value:  Number(math.NaN()),
+		expect: "null",
+	},
+}
+
+func TestNumber_Encode(t *testing.T) {
+	for _, v := range numberEncodeTests {
+		r := v.value.Encode()
+		if r != v.expect {
+			t.Errorf("encoded string = %s, want %s", r, v.expect)
+		}
+	}
+}
+
+func TestNumber_IsPositiveInfinity(t *testing.T) {
+	f := Float(math.Inf(1))
+	ret := f.IsPositiveInfinity()
+	if ret != true {
+		t.Errorf("IsPositiveInfinity = %t, want %t", ret, true)
+	}
+
+	f = Float(math.Inf(-1))
+	ret = f.IsPositiveInfinity()
+	if ret != false {
+		t.Errorf("IsPositiveInfinity = %t, want %t", ret, false)
+	}
+}
+
+func TestNumber_IsNegativeInfinity(t *testing.T) {
+	f := Float(math.Inf(1))
+	ret := f.IsNegativeInfinity()
+	if ret != false {
+		t.Errorf("IsNegativeInfinity = %t, want %t", ret, false)
+	}
+
+	f = Float(math.Inf(-1))
+	ret = f.IsNegativeInfinity()
+	if ret != true {
+		t.Errorf("IsNegativeInfinity = %t, want %t", ret, true)
 	}
 }
