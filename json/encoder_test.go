@@ -12,6 +12,7 @@ var encoderEncodeTests = []struct {
 	Escape         EscapeType
 	PrettyPrint    bool
 	NanInfHandling NanInfHandling
+	FloatFormat    FloatFormat
 	LineBreak      text.LineBreak
 	UsePalette     bool
 	Expect         string
@@ -44,6 +45,33 @@ var encoderEncodeTests = []struct {
 		PrettyPrint: false,
 		LineBreak:   text.LF,
 		Expect:      "-1.234",
+	},
+	{
+		Input:          Number(0.0000000000123),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToNull,
+		FloatFormat:    ENotationForLargeExponents,
+		LineBreak:      text.LF,
+		Expect:         "1.23e-11",
+	},
+	{
+		Input:          Number(0.0000000000123),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: CreateError,
+		FloatFormat:    ENotationForLargeExponents,
+		LineBreak:      text.LF,
+		Expect:         "1.23e-11",
+	},
+	{
+		Input:          Number(0.0000000000123),
+		Escape:         Backslash,
+		PrettyPrint:    false,
+		NanInfHandling: ConvertToStringNotation,
+		FloatFormat:    ENotationForLargeExponents,
+		LineBreak:      text.LF,
+		Expect:         "1.23e-11",
 	},
 	{
 		Input:          Number(-1.234),
@@ -410,6 +438,7 @@ func TestEncoder_Encode(t *testing.T) {
 		e.EscapeType = v.Escape
 		e.PrettyPrint = v.PrettyPrint
 		e.NanInfHandling = v.NanInfHandling
+		e.FloatFormat = v.FloatFormat
 		e.LineBreak = v.LineBreak
 		if v.UsePalette {
 			e.Palette = palette

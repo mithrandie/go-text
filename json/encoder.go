@@ -45,6 +45,13 @@ const (
 	ConvertToStringNotation
 )
 
+type FloatFormat int8
+
+const (
+	NoExponent FloatFormat = iota
+	ENotationForLargeExponents
+)
+
 type UnsupportedValueError struct {
 	Value string
 }
@@ -63,6 +70,7 @@ type Encoder struct {
 	EscapeType     EscapeType
 	PrettyPrint    bool
 	NanInfHandling NanInfHandling
+	FloatFormat    FloatFormat
 	LineBreak      text.LineBreak
 	IndentSpaces   int
 	Palette        *color.Palette
@@ -78,6 +86,7 @@ func NewEncoder() *Encoder {
 		EscapeType:     Backslash,
 		PrettyPrint:    false,
 		NanInfHandling: ConvertToNull,
+		FloatFormat:    NoExponent,
 		LineBreak:      text.LF,
 		IndentSpaces:   2,
 		Palette:        nil,
@@ -157,13 +166,17 @@ func (e *Encoder) encodeStructure(structure Structure, depth int) (string, error
 		switch e.NanInfHandling {
 		case CreateError:
 			if v.IsNaN() || v.IsInf() {
-				return encoded, NewUnsupportedValueError(strconv.FormatFloat(v.Raw(), 'f', -1, 64))
+				return encoded, NewUnsupportedValueError(e.formatFloat(v.Raw()))
 			}
-			encoded = e.effect(NumberEffect, structure.Encode())
+			encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
 		case ConvertToStringNotation:
-			encoded = e.effect(NumberEffect, strconv.FormatFloat(v.Raw(), 'f', -1, 64))
+			encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
 		default:
-			encoded = e.effect(NumberEffect, structure.Encode())
+			if v.IsNaN() || v.IsInf() {
+				encoded = e.effect(NullEffect, NullValue)
+			} else {
+				encoded = e.effect(NumberEffect, e.formatFloat(v.Raw()))
+			}
 		}
 	case Integer:
 		encoded = e.effect(NumberEffect, structure.Encode())
@@ -204,6 +217,15 @@ func (e *Encoder) formatString(s string) string {
 	}
 
 	return string(QuotationMark) + escaped + string(QuotationMark)
+}
+
+func (e *Encoder) formatFloat(f float64) string {
+	switch e.FloatFormat {
+	case ENotationForLargeExponents:
+		return strconv.FormatFloat(f, 'g', -1, 64)
+	default:
+		return strconv.FormatFloat(f, 'f', -1, 64)
+	}
 }
 
 func (e *Encoder) effect(key string, s string) string {
