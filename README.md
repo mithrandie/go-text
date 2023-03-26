@@ -5,6 +5,10 @@ The package text and the sub-packages are Go libraries to operate text.
 [![Test](https://github.com/mithrandie/go-text/actions/workflows/test.yml/badge.svg)](https://github.com/mithrandie/go-text/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 
+## Requirements
+
+Go 1.18 or later.
+
 ## Supported Character Encodings
 - UTF-8
 - UTF-16
